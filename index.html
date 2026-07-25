@@ -155,7 +155,7 @@ const SERVICES = {
          {t:"Class 3 Shingles", sm:"TAMKO Titan XT — premium architectural, the QC standard", img:"sw_class3", mult:1.00},
          {t:"Class 4 Shingles", sm:"Stormfighter Flex — Class 4 impact-rated, may lower insurance", img:"sw_class4", mult:1.20, tag:"Popular"},
          {t:"Synthetic (Slate/Shake)", sm:"Brava — premium synthetic slate/shake, 50-yr", img:"sw_synth", mult:1.75},
-         {t:"Not sure — help me choose", sm:"We'll walk you through it on inspection", img:"sw_help", mult:1.00}
+         {t:"Not sure — help me choose", sm:"We'll help you pick on your free estimate", img:"sw_help", mult:1.00}
        ]},
       {key:"steep", type:"choice", q:"How steep is your roof?",
        opts:[
@@ -396,7 +396,7 @@ function renderEstimate(){
         </div>
         <div class="body">
           ${summaryRows(s)}
-          <p class="disc">*Illustrative only (sample 10-yr term). Actual financing set by your provider. This range is a ballpark, not a formal quote — final price confirmed after a free inspection.</p>
+          <p class="disc">*Illustrative only (sample 10-yr term). Actual financing set by your provider. This range is a ballpark, not a formal quote — final price confirmed after a free on-site estimate.</p>
         </div>
       </div>
       ${showcaseBlock()}
@@ -444,7 +444,7 @@ function renderLead(){
         <button class="btn-ghost btn" onclick="${s.inspectionOnly?"back()":"state.screen='quiz';render()"}">←</button>
         <button class="btn btn-primary" onclick="submitLead()">${s.inspectionOnly?'Book free inspection':'Unlock my estimate →'}</button>
       </div>
-      <div class="note" style="margin-top:14px;background:#eef7ff;border-color:#bfe0ff;color:#3a6ea5;">${lockIcon()}<span>Your info is safe. We only use it to prepare your estimate and schedule your inspection — no spam.</span></div>
+      <div class="note" style="margin-top:14px;background:#eef7ff;border-color:#bfe0ff;color:#3a6ea5;">${lockIcon()}<span>Your info is safe. We only use it to prepare your estimate and schedule your free on-site estimate — no spam.</span></div>
     </div>`;
 }
 window.submitLead = async () => {
@@ -475,7 +475,7 @@ function renderDone(){
       <h1>You're all set, ${state.lead.name.split(' ')[0]}!</h1>
       <p class="sub">${s.inspectionOnly
         ? "Your free storm inspection request is in. We'll call shortly to lock in a time and walk you through the insurance side."
-        : "Your estimate is on its way to "+state.lead.email+". We'll reach out to schedule your free inspection."}</p>
+        : "Your estimate is on its way to "+state.lead.email+". We'll reach out to schedule your free on-site estimate."}</p>
       <div class="estcard" style="text-align:left;margin-top:6px;"><div class="body">
         <div class="estrow"><span>Service</span><b>${s.label}</b></div>
         <div class="estrow"><span>Name</span><b>${state.lead.name}</b></div>
