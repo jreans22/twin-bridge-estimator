@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Twin Bridge Roofing — Instant Estimate</title>
+<!-- Google Ads (Twin Bridge) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10847447397"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-10847447397');
+</script>
 <style>
   :root{
     --red:#e31e24; --red-dark:#b8171c; --ink:#1a1919; --bg:#f4f5f7;
@@ -571,6 +579,18 @@ window.submitLead = async () => {
     try{ await fetch(CONFIG.X360_LEAD_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
     catch(e){}
   }
+  // Google Ads conversion — fires once per completed lead
+  try{
+    if(typeof gtag==='function' && !state._conv){
+      state._conv = true;
+      gtag('event','conversion',{
+        'send_to':'AW-10847447397/1Wx2COefuMscEOXSu7Qo',
+        'value':100.0,
+        'currency':'USD',
+        'transaction_id': 'est-'+Date.now()
+      });
+    }
+  }catch(e){}
   state.screen = s.inspectionOnly ? 'done' : 'estimate'; render();
 };
 function v(id){return (document.getElementById(id).value||'').trim();}
