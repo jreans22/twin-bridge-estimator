@@ -44,6 +44,7 @@
   .swatch{width:88px;height:60px;border-radius:11px;overflow:hidden;flex:none;border:1px solid var(--line);background:#e7e7e7;}
   .swatch svg{width:100%;height:100%;display:block;}
   .swatch img.prod{width:100%;height:100%;object-fit:contain;display:block;}
+  .swatch img.prod.fill{object-fit:cover;}
   .field{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:20px 18px;margin-bottom:14px;}
   input[type=range]{width:100%;accent-color:var(--red);height:6px;}
   .sizeout{text-align:center;font-size:30px;font-weight:800;color:var(--ink);margin:6px 0 2px;}
@@ -119,7 +120,7 @@ const PH = {
   hero:     '/hero.jpg?v=1',
   roof:     '/roof.jpg?v=1',
   repair:   '/repair.jpg?v=1',
-  siding:   rz('6942dec49a634fa063b10802.jpg', 560),
+  siding:   rz('69406b7797c023d2b6496248.jpg', 500),
   storm:    '/storm.jpg?v=1',
   showcase: rz('69406abaab2594bc8220009e.jpg', 1000)
 };
@@ -131,9 +132,9 @@ const ART = {
   sw_class4:`<img class="prod" src="${rz('6937b613aba1f6581dc32a74.png',320)}" alt="TAMKO Stormfighter Flex">`,
   sw_synth:`<img class="prod" src="${rz('6937b326aba1f65ae6c2c642.webp',320)}" alt="Brava synthetic">`,
   sw_help:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#eef2f6"/><text x="30" y="40" font-size="34" font-weight="800" text-anchor="middle" fill="#e31e24" font-family="Arial">?</text></svg>`,
-  sw_vinyl:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#dfe6ec"/>${lapRows('#c7d2da')}</svg>`,
-  sw_comp:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#b7a793"/>${lapRows('#a08e78')}</svg>`,
-  sw_steel:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mtl" x1="0" x2="1"><stop offset="0" stop-color="#aeb7c0"/><stop offset=".5" stop-color="#e2e8ee"/><stop offset="1" stop-color="#9aa4ae"/></linearGradient></defs><rect width="60" height="60" fill="url(#mtl)"/><g stroke="#8a949e" stroke-width="1.5">${[10,20,30,40,50].map(x=>`<path d="M${x} 0 L${x} 60"/>`).join('')}</g></svg>`
+  sw_vinyl:`<img class="prod fill" src="${rz('694319eda156350c1870ac90.png',320)}" alt="Royal Estate vinyl siding">`,
+  sw_comp:`<img class="prod fill" src="/composite.jpg?v=1" alt="Composite wood-grain siding">`,
+  sw_steel:`<img class="prod fill" src="${rz('69433689c8b4b238b2177e0e.jpg',320)}" alt="Quality Edge Vesta steel siding">`
 };
 function shingleRows(a,b){let s='';for(let r=0;r<5;r++){const y=8+r*11;for(let c=0;c<6;c++){const x=(r%2?5:0)+c*11;s+=`<rect x="${x}" y="${y}" width="10" height="9" fill="${c%2?a:b}"/>`;}}return s;}
 function slateRows(){let s='';for(let r=0;r<5;r++){const y=6+r*11;for(let c=0;c<5;c++){const x=(r%2?6:0)+c*12;s+=`<rect x="${x}" y="${y}" width="11" height="10" rx="1.5" fill="${(r+c)%2?'#5a6570':'#414b55'}"/>`;}}return s;}
@@ -209,9 +210,9 @@ const SERVICES = {
        ]},
       {key:"material", type:"choice", q:"What siding material do you want?",
        opts:[
-         {t:"Vinyl", sm:"Most popular", img:"sw_vinyl", mult:1.00},
-         {t:"Composite", sm:"Premium look", img:"sw_comp", mult:1.25},
-         {t:"Steel", sm:"Most durable", img:"sw_steel", mult:1.40},
+         {t:"Vinyl", sm:"Royal Estate — most popular", img:"sw_vinyl", mult:1.00},
+         {t:"Composite", sm:"Engineered wood-grain — premium look", img:"sw_comp", mult:1.25},
+         {t:"Steel", sm:"Quality Edge Vesta — most durable", img:"sw_steel", mult:1.40},
          {t:"Not sure", sm:"", img:"sw_help", mult:1.00}
        ]},
       {key:"tearoff", type:"choice", q:"Does the old siding need to come off first?",
