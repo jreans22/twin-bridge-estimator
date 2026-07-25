@@ -637,9 +637,21 @@ function lockIcon(){return '<svg width="15" height="15" viewBox="0 0 24 24" fill
 /* ---- Embed support: report height to parent page + scroll parent to top on step change ---- */
 (function(){
   if(window.self === window.top) return;           // not embedded, do nothing
+
+  /* Kill the 100vh min-height while embedded. If we leave it, the wrap always
+     fills the iframe, scrollHeight always equals the iframe height, and the
+     height we post back is just the height we already set — a feedback loop
+     that never shrinks. Measuring real content requires releasing it first. */
+  const st = document.createElement('style');
+  st.textContent = 'html,body{height:auto!important;background:transparent!important}'
+                 + '.wrap{min-height:0!important;box-shadow:none!important}';
+  document.head.appendChild(st);
+
   let last = 0;
   function report(){
-    const h = Math.ceil(document.documentElement.scrollHeight);
+    const wrap = document.querySelector('.wrap');
+    if(!wrap) return;
+    const h = Math.max(620, Math.ceil(wrap.getBoundingClientRect().height) + 2);
     if(Math.abs(h - last) < 8) return;
     last = h;
     try{ window.parent.postMessage({tbEstimator:'height', height:h}, '*'); }catch(e){}
