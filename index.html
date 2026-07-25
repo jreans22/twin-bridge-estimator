@@ -357,8 +357,25 @@ window.back = () => {
   if(state.step>0){ state.step--; render(); } else { state.screen='intro'; state.service=null; state.measured=null; render(); }
 };
 
-/* Address autocomplete — free (Photon/OpenStreetMap), biased to the Quad Cities. */
+/* Address autocomplete — Google Places (New) for accurate US rooftop-level results,
+   with free Photon/OpenStreetMap as a fallback if the key/API is unavailable. */
 let _addrTimer=null;
+function renderAddrItems(box,items){
+  if(!items.length){ box.style.display='none'; box.innerHTML=''; return; }
+  box._items=items;
+  box.innerHTML=items.map((it,i)=>`<div class="addropt" onclick="pickAddr(${i})">${pinIcon()}<span>${it.label}</span></div>`).join('');
+  box.style.display='block';
+}
+async function photonSuggest(q){
+  const url=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=en&lat=41.52&lon=-90.57`;
+  const j=await (await fetch(url)).json();
+  return (j.features||[]).map(f=>{
+    const p=f.properties||{};
+    const label=[[p.housenumber,p.street].filter(Boolean).join(' '), p.city||p.name, [p.state,p.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+    const c=(f.geometry&&f.geometry.coordinates)||null;
+    return {label, zip:p.postcode||'', lat:c?c[1]:null, lon:c?c[0]:null};
+  }).filter(x=>x.label);
+}
 window.addrInput = (q) => {
   const box=document.getElementById('addrsug'); if(!box) return;
   state.answers.address={raw:q};
@@ -366,34 +383,50 @@ window.addrInput = (q) => {
   if(!q || q.length<4){ box.style.display='none'; box.innerHTML=''; return; }
   _addrTimer=setTimeout(async ()=>{
     try{
-      const url=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=en&lat=41.52&lon=-90.57`;
-      const j=await (await fetch(url)).json();
-      const items=(j.features||[]).map(f=>{
-        const p=f.properties||{};
-        const label=[[p.housenumber,p.street].filter(Boolean).join(' '), p.city||p.name, [p.state,p.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-        const c=(f.geometry&&f.geometry.coordinates)||null;
-        return {label, zip:p.postcode||'', lat:c?c[1]:null, lon:c?c[0]:null};
-      }).filter(x=>x.label);
-      if(!items.length){ box.style.display='none'; return; }
-      box._items=items;
-      box.innerHTML=items.map((it,i)=>`<div class="addropt" onclick="pickAddr(${i})">${pinIcon()}<span>${it.label}</span></div>`).join('');
-      box.style.display='block';
-    }catch(e){ box.style.display='none'; }
+      if(SOLAR.key){
+        const r=await fetch('https://places.googleapis.com/v1/places:autocomplete',{
+          method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':SOLAR.key},
+          body:JSON.stringify({input:q, includedRegionCodes:['us'], locationBias:{circle:{center:{latitude:41.52,longitude:-90.57},radius:60000}}})
+        });
+        if(r.ok){
+          const j=await r.json();
+          const items=(j.suggestions||[]).map(s=>({label:s.placePrediction.text.text, placeId:s.placePrediction.placeId})).filter(x=>x.label&&x.placeId);
+          if(items.length){ renderAddrItems(box,items); return; }
+        }
+      }
+      renderAddrItems(box, await photonSuggest(q));   // fallback
+    }catch(e){ try{ renderAddrItems(box, await photonSuggest(q)); }catch(_){ box.style.display='none'; } }
   }, 250);
 };
-window.pickAddr = (i) => {
+window.pickAddr = async (i) => {
   const box=document.getElementById('addrsug'); const it=(box._items||[])[i]; if(!it) return;
   const inp=document.getElementById('txt'); if(inp) inp.value=it.label;
   state.answers.address={raw:it.label};
-  if(it.zip) state.addrZip=it.zip;
-  if(it.lat!=null){ state.addrLatLon={lat:it.lat,lon:it.lon}; startMeasure(it.lat,it.lon); }
   box.style.display='none'; box.innerHTML='';
+  if(it.placeId && SOLAR.key){
+    try{
+      const r=await fetch('https://places.googleapis.com/v1/places/'+it.placeId,{headers:{'X-Goog-Api-Key':SOLAR.key,'X-Goog-FieldMask':'location,addressComponents'}});
+      const d=await r.json();
+      if(d.location){
+        const z=(d.addressComponents||[]).find(c=>(c.types||[]).includes('postal_code'));
+        if(z) state.addrZip=z.shortText||z.longText||'';
+        state.addrLatLon={lat:d.location.latitude,lon:d.location.longitude};
+        startMeasure(d.location.latitude,d.location.longitude);
+      }
+    }catch(e){}
+  } else {
+    if(it.zip) state.addrZip=it.zip;
+    if(it.lat!=null){ state.addrLatLon={lat:it.lat,lon:it.lon}; startMeasure(it.lat,it.lon); }
+  }
 };
 
 /* ============ SATELLITE AUTO-MEASURE (Google Solar) ============ */
 /* Key is loaded from /config.js (window.SOLAR_KEY), referrer-locked to *.roofqc.com.
    Never hardcoded here so it can be rotated without touching app code. */
-const SOLAR = { key:(typeof window!=='undefined'&&window.SOLAR_KEY)||'', cap:60 };
+/* cal = calibration factor. Google Solar under-reads roof area (built for solar panels,
+   misses garages/dormers/low-quality sections). Calibrated 2026-07-25 against a real Hover:
+   1423 34th Ave, Rock Island — Hover 1,989 sq ft vs Solar raw ~1,550. Validate on more homes to refine. */
+const SOLAR = { key:(typeof window!=='undefined'&&window.SOLAR_KEY)||'', cap:60, cal:1.25 };
 function solarDay(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return 'na'; } }
 function solarCapOk(){
   try{ const r=JSON.parse(localStorage.getItem('tbSolar')||'{}'); return r.d!==solarDay() || (r.n||0)<SOLAR.cap; }
@@ -416,7 +449,7 @@ async function measureRoof(lat,lon){
       const p=((s&&s.pitchDegrees!=null)?s.pitchDegrees:22)*Math.PI/180;
       const c=Math.max(Math.cos(p),0.5); sqft+=(a/c)*10.7639; }
     if(!(sqft>0)) return null;
-    return Math.round(sqft/50)*50;
+    return Math.round(sqft*SOLAR.cal/50)*50;
   }catch(e){ return null; }
 }
 async function startMeasure(lat,lon){
