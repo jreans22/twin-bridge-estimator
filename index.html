@@ -41,8 +41,9 @@
   .opt .chev{margin-left:auto;color:#c9c9c9;flex:none;}
   .pic{width:86px;height:72px;border-radius:11px;overflow:hidden;flex:none;background:#e7edf3;}
   .pic img{width:100%;height:100%;object-fit:cover;display:block;}
-  .swatch{width:58px;height:58px;border-radius:11px;overflow:hidden;flex:none;border:1px solid var(--line);}
+  .swatch{width:88px;height:60px;border-radius:11px;overflow:hidden;flex:none;border:1px solid var(--line);background:#e7e7e7;}
   .swatch svg{width:100%;height:100%;display:block;}
+  .swatch img.prod{width:100%;height:100%;object-fit:contain;display:block;}
   .field{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:20px 18px;margin-bottom:14px;}
   input[type=range]{width:100%;accent-color:var(--red);height:6px;}
   .sizeout{text-align:center;font-size:30px;font-weight:800;color:var(--ink);margin:6px 0 2px;}
@@ -96,7 +97,7 @@
   footer{padding:16px 20px;text-align:center;font-size:12px;color:var(--muted);border-top:1px solid var(--line);background:#fff;}
   footer a{color:var(--red);text-decoration:none;font-weight:600;}
   .pill{display:inline-block;background:#eafaf0;color:var(--green);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;}
-  @media(max-width:430px){h1{font-size:21px}.lead .grid2{grid-template-columns:1fr}.pic{width:74px;height:64px}header .brand{height:46px}.hero img{height:180px}}
+  @media(max-width:430px){h1{font-size:21px}.lead .grid2{grid-template-columns:1fr}.pic{width:74px;height:64px}.swatch{width:78px;height:56px}header .brand{height:46px}.hero img{height:180px}}
 </style>
 </head>
 <body>
@@ -126,9 +127,9 @@ const SERVICE_PHOTO = {'roof-replacement':PH.roof,'roof-repair':PH.repair,'sidin
 
 /* ============ MATERIAL SWATCHES (small texture chips) ============ */
 const ART = {
-  sw_class3:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#6f6a63"/><g fill="#837d75">${shingleRows('#837d75','#5e5952')}</g></svg>`,
-  sw_class4:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#3f4a55"/>${shingleRows('#4c5866','#333b44')}<path d="M46 8 l8 3 v6 c0 5 -4 8 -8 10 c-4 -2 -8 -5 -8 -10 v-6 z" fill="#ffd24a" stroke="#1a1919" stroke-width="1"/></svg>`,
-  sw_synth:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#4a5560"/>${slateRows()}</svg>`,
+  sw_class3:`<img class="prod" src="${rz('6937b63d50387fc99074d20a.png',320)}" alt="TAMKO Titan XT">`,
+  sw_class4:`<img class="prod" src="${rz('6937b613aba1f6581dc32a74.png',320)}" alt="TAMKO Stormfighter Flex">`,
+  sw_synth:`<img class="prod" src="${rz('6937b326aba1f65ae6c2c642.webp',320)}" alt="Brava synthetic">`,
   sw_help:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#eef2f6"/><text x="30" y="40" font-size="34" font-weight="800" text-anchor="middle" fill="#e31e24" font-family="Arial">?</text></svg>`,
   sw_vinyl:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#dfe6ec"/>${lapRows('#c7d2da')}</svg>`,
   sw_comp:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#b7a793"/>${lapRows('#a08e78')}</svg>`,
@@ -151,9 +152,9 @@ const SERVICES = {
        min:900,max:4000,step:50,def:1800,unit:"sq ft"},
       {key:"material", type:"choice", q:"What roofing material would you like?",
        opts:[
-         {t:"Class 3 Shingles", sm:"Impact-resistant architectural — the QC standard", img:"sw_class3", mult:1.00},
-         {t:"Class 4 Shingles", sm:"Top impact rating — may lower your insurance", img:"sw_class4", mult:1.20, tag:"Popular"},
-         {t:"Synthetic (Slate/Shake)", sm:"Premium look, lightweight, 50-yr class", img:"sw_synth", mult:1.75},
+         {t:"Class 3 Shingles", sm:"TAMKO Titan XT — premium architectural, the QC standard", img:"sw_class3", mult:1.00},
+         {t:"Class 4 Shingles", sm:"Stormfighter Flex — Class 4 impact-rated, may lower insurance", img:"sw_class4", mult:1.20, tag:"Popular"},
+         {t:"Synthetic (Slate/Shake)", sm:"Brava — premium synthetic slate/shake, 50-yr", img:"sw_synth", mult:1.75},
          {t:"Not sure — help me choose", sm:"We'll walk you through it on inspection", img:"sw_help", mult:1.00}
        ]},
       {key:"steep", type:"choice", q:"How steep is your roof?",
@@ -180,9 +181,9 @@ const SERVICES = {
        ]},
       {key:"material", type:"choice", q:"What roofing material do you have?",
        opts:[
-         {t:"Class 3 Shingles", sm:"Architectural asphalt", img:"sw_class3", mult:1.00},
-         {t:"Class 4 Shingles", sm:"Impact-resistant asphalt", img:"sw_class4", mult:1.10},
-         {t:"Synthetic (Slate/Shake)", sm:"Premium synthetic", img:"sw_synth", mult:1.45},
+         {t:"Class 3 Shingles", sm:"TAMKO Titan XT architectural", img:"sw_class3", mult:1.00},
+         {t:"Class 4 Shingles", sm:"Stormfighter Flex — impact-resistant", img:"sw_class4", mult:1.10},
+         {t:"Synthetic (Slate/Shake)", sm:"Brava synthetic", img:"sw_synth", mult:1.45},
          {t:"Not sure", sm:"", img:"sw_help", mult:1.10}
        ]},
       {key:"access", type:"choice", q:"How easy is the roof to get to?",
