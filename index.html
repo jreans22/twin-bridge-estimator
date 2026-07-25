@@ -386,12 +386,16 @@ window.addrInput = (q) => {
       if(SOLAR.key){
         const r=await fetch('https://places.googleapis.com/v1/places:autocomplete',{
           method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':SOLAR.key},
-          body:JSON.stringify({input:q, includedRegionCodes:['us'], locationBias:{circle:{center:{latitude:41.52,longitude:-90.57},radius:60000}}})
+          /* radius MUST be <= 50000 — Google rejects anything larger with 400 INVALID_ARGUMENT,
+             which silently drops us to the Photon fallback (which can't resolve US house numbers). */
+          body:JSON.stringify({input:q, includedRegionCodes:['us'], locationBias:{circle:{center:{latitude:41.52,longitude:-90.57},radius:45000}}})
         });
         if(r.ok){
           const j=await r.json();
           const items=(j.suggestions||[]).map(s=>({label:s.placePrediction.text.text, placeId:s.placePrediction.placeId})).filter(x=>x.label&&x.placeId);
           if(items.length){ renderAddrItems(box,items); return; }
+        } else {
+          try{ const e=await r.json(); console.warn('Places autocomplete failed:', r.status, e&&e.error&&e.error.message); }catch(_){ console.warn('Places autocomplete failed:', r.status); }
         }
       }
       renderAddrItems(box, await photonSuggest(q));   // fallback
