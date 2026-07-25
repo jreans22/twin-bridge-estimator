@@ -112,6 +112,7 @@
   }
   @media(max-width:360px){.estcard .top .amt{font-size:24px}h1{font-size:20px}}
 </style>
+<script src="/config.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -290,7 +291,12 @@ function renderIntro(){
       </div>
     </div>`;
 }
-window.pickService = k => { state.service=k; state.step=0; state.answers={}; state.screen='quiz'; render(); };
+window.pickService = k => {
+  state.service=k; state.step=0; state.answers={}; state.screen='quiz';
+  state.measured=null; state.measuring=false; state.addrLatLon=null;
+  const sl=(SERVICES[k].steps||[]).find(s=>s.type==='slider'); if(sl) state.size=sl.def||state.size;
+  render();
+};
 
 function renderQuiz(){
   const s = SERVICES[state.service];
@@ -311,7 +317,7 @@ function renderQuiz(){
           oninput="document.getElementById('sizeout').innerHTML=(+this.value).toLocaleString()+' <small>${step.unit}</small>';state.size=+this.value;">
         <div class="rangelabels"><span>${step.min.toLocaleString()}</span><span>${step.max.toLocaleString()}+</span></div>
       </div>
-      <div id="measbox">${state.measured ? measuredBox() : `<div class="note">${infoIcon()}<span>${step.hint}</span></div>`}</div>`;
+      <div id="measbox">${state.measuring ? measuringBox() : (state.measured ? measuredBox() : `<div class="note">${infoIcon()}<span>${step.hint}</span></div>`)}</div>`;
   } else if(step.type==='text'){
     inner = `
       <div class="addrwrap">
@@ -380,9 +386,61 @@ window.pickAddr = (i) => {
   const inp=document.getElementById('txt'); if(inp) inp.value=it.label;
   state.answers.address={raw:it.label};
   if(it.zip) state.addrZip=it.zip;
-  if(it.lat!=null) state.addrLatLon={lat:it.lat,lon:it.lon};
+  if(it.lat!=null){ state.addrLatLon={lat:it.lat,lon:it.lon}; startMeasure(it.lat,it.lon); }
   box.style.display='none'; box.innerHTML='';
 };
+
+/* ============ SATELLITE AUTO-MEASURE (Google Solar) ============ */
+/* Key is loaded from /config.js (window.SOLAR_KEY), referrer-locked to *.roofqc.com.
+   Never hardcoded here so it can be rotated without touching app code. */
+const SOLAR = { key:(typeof window!=='undefined'&&window.SOLAR_KEY)||'', cap:60 };
+function solarDay(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return 'na'; } }
+function solarCapOk(){
+  try{ const r=JSON.parse(localStorage.getItem('tbSolar')||'{}'); return r.d!==solarDay() || (r.n||0)<SOLAR.cap; }
+  catch(e){ return true; }
+}
+function solarBump(){
+  try{ const r=JSON.parse(localStorage.getItem('tbSolar')||'{}'); const n=(r.d===solarDay()?(r.n||0):0)+1;
+    localStorage.setItem('tbSolar',JSON.stringify({d:solarDay(),n})); }catch(e){}
+}
+async function measureRoof(lat,lon){
+  try{
+    if(!SOLAR.key || lat==null || lon==null) return null;
+    if(!solarCapOk()) return null;
+    const u=`https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude=${lat}&location.longitude=${lon}&requiredQuality=LOW&key=${SOLAR.key}`;
+    const r=await fetch(u); if(!r.ok) return null; solarBump();
+    const j=await r.json();
+    const segs=(j&&j.solarPotential&&j.solarPotential.roofSegmentStats)||[];
+    let sqft=0;
+    for(const s of segs){ const a=(s&&s.stats&&s.stats.areaMeters2)||0;
+      const p=((s&&s.pitchDegrees!=null)?s.pitchDegrees:22)*Math.PI/180;
+      const c=Math.max(Math.cos(p),0.5); sqft+=(a/c)*10.7639; }
+    if(!(sqft>0)) return null;
+    return Math.round(sqft/50)*50;
+  }catch(e){ return null; }
+}
+async function startMeasure(lat,lon){
+  if(!SOLAR.key) return;
+  state.measuring=true; state.measured=null; refreshMeasbox();
+  const sqft=await measureRoof(lat,lon);
+  state.measuring=false;
+  if(sqft){ const sl=(SERVICES[state.service]&&SERVICES[state.service].steps||[]).find(s=>s.type==='slider');
+    let v=sqft; if(sl){ v=Math.min(Math.max(sqft,sl.min),sl.max); }
+    state.measured=sqft; state.size=v; }
+  refreshMeasbox(); refreshSlider();
+}
+function measuringBox(){ return `<div class="note" style="background:#eef7ff;border-color:#bfe0ff;color:#3a6ea5;">${infoIcon()}<span>Measuring your roof from satellite…</span></div>`; }
+function refreshMeasbox(){
+  const box=document.getElementById('measbox'); if(!box) return;
+  const step=SERVICES[state.service]&&SERVICES[state.service].steps[state.step];
+  if(!step||step.type!=='slider') return;
+  box.innerHTML = state.measuring ? measuringBox() : (state.measured ? measuredBox() : `<div class="note">${infoIcon()}<span>${step.hint}</span></div>`);
+}
+function refreshSlider(){
+  const step=SERVICES[state.service]&&SERVICES[state.service].steps[state.step]; if(!step||step.type!=='slider') return;
+  const inp=document.querySelector('input[type=range]'); const out=document.getElementById('sizeout');
+  if(inp) inp.value=state.size; if(out) out.innerHTML=state.size.toLocaleString()+' <small>'+step.unit+'</small>';
+}
 
 function estInput(){
   const o = {...state.answers};
