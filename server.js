@@ -23,9 +23,10 @@ http.createServer((req, res) => {
       return;
     }
     const ext = path.extname(file).toLowerCase();
+    const noCache = ext === '.html' || safe === '/config.js';
     res.writeHead(200, {
       'Content-Type': MIME[ext] || 'application/octet-stream',
-      'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=86400'
+      'Cache-Control': noCache ? 'no-cache' : 'public, max-age=86400'
     });
     res.end(data);
   });
