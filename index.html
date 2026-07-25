@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twin Bridge Roofing — Instant Estimate</title>
+<style>
+  :root{
+    --red:#e31e24; --red-dark:#b8171c; --ink:#1a1919; --bg:#fbfbfb;
+    --line:#e7e7e7; --muted:#6b6b6b; --green:#1e9e5a; --card:#ffffff;
+    --shadow:0 6px 24px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:640px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+  header{background:var(--ink);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo .mark{width:38px;height:38px;border-radius:8px;background:var(--red);display:flex;align-items:center;
+    justify-content:center;font-weight:800;font-size:18px;color:#fff;letter-spacing:-1px;}
+  .logo .name{font-weight:800;font-size:15px;line-height:1.1;}
+  .logo .name span{display:block;font-weight:500;font-size:11px;color:#cfcfcf;letter-spacing:.5px;text-transform:uppercase;}
+  header .badge{margin-left:auto;font-size:10.5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    padding:5px 9px;border-radius:20px;color:#fff;text-align:center;line-height:1.25;}
+  header .badge b{color:#ffd24a;}
+  .progress{height:5px;background:#eee;}
+  .progress .bar{height:100%;background:var(--red);width:0;transition:width .35s ease;}
+  main{flex:1;padding:22px 20px 40px;}
+  .step{animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .hero{width:100%;border-radius:16px;overflow:hidden;margin-bottom:18px;box-shadow:var(--shadow);line-height:0;}
+  .hero svg{width:100%;height:auto;display:block;}
+  .eyebrow{color:var(--red);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px;}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:20px;}
+  .cards{display:flex;flex-direction:column;gap:12px;}
+  .opt{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 15px;cursor:pointer;
+    text-align:left;transition:.15s;display:flex;align-items:center;gap:14px;width:100%;font-size:15.5px;font-weight:700;color:var(--ink);}
+  .opt:hover{border-color:var(--red);box-shadow:var(--shadow);transform:translateY(-1px);}
+  .opt .sm{font-weight:500;font-size:12.5px;color:var(--muted);display:block;margin-top:2px;}
+  .opt .tag{display:inline-block;font-size:10.5px;font-weight:700;color:var(--red);background:#fdeaea;border-radius:20px;padding:2px 8px;margin-top:5px;}
+  .opt .chev{margin-left:auto;color:#c9c9c9;flex:none;}
+  .pic{width:76px;height:76px;border-radius:12px;overflow:hidden;flex:none;background:#eef4fa;}
+  .pic svg{width:100%;height:100%;display:block;}
+  .swatch{width:58px;height:58px;border-radius:11px;overflow:hidden;flex:none;border:1px solid var(--line);}
+  .swatch svg{width:100%;height:100%;display:block;}
+  .field{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:20px 18px;margin-bottom:14px;}
+  input[type=range]{width:100%;accent-color:var(--red);height:6px;}
+  .sizeout{text-align:center;font-size:30px;font-weight:800;color:var(--ink);margin:6px 0 2px;}
+  .sizeout small{font-size:14px;color:var(--muted);font-weight:600;}
+  .rangelabels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:4px;}
+  input[type=text],input[type=email],input[type=tel]{width:100%;padding:13px 14px;border:1.5px solid var(--line);
+    border-radius:11px;font-size:15px;font-family:inherit;color:var(--ink);}
+  input:focus{outline:none;border-color:var(--red);}
+  /* address autocomplete */
+  .addrwrap{position:relative;margin-bottom:14px;}
+  .addrsug{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--line);border-radius:11px;box-shadow:var(--shadow);z-index:30;display:none;overflow:hidden;}
+  .addropt{padding:12px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid #f2f2f2;display:flex;gap:9px;align-items:center;}
+  .addropt:last-child{border-bottom:none;}
+  .addropt:hover{background:#fdeaea;color:var(--red);}
+  .addropt svg{flex:none;color:var(--red);}
+  .note{font-size:12px;color:var(--muted);background:#fff7e6;border:1px solid #ffe4a3;border-radius:10px;
+    padding:10px 12px;margin-top:4px;display:flex;gap:8px;align-items:flex-start;}
+  .note svg{flex:none;color:#c98a00;margin-top:1px;}
+  .nav{display:flex;gap:10px;margin-top:22px;}
+  .btn{border:none;border-radius:12px;padding:15px 22px;font-size:15.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;flex:1;}
+  .btn-primary{background:var(--red);color:#fff;}
+  .btn-primary:hover{background:var(--red-dark);}
+  .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);flex:none;padding:15px 18px;}
+  .btn-ghost:hover{border-color:#bbb;}
+  .estcard{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--line);}
+  .estcard .top{background:var(--ink);color:#fff;padding:22px 22px 20px;text-align:center;}
+  .estcard .top .lbl{font-size:12.5px;letter-spacing:1px;text-transform:uppercase;color:#c9c9c9;margin-bottom:6px;}
+  .estcard .top .amt{font-size:34px;font-weight:800;letter-spacing:-.5px;}
+  .estcard .top .fin{margin-top:8px;font-size:13.5px;color:#ffd24a;font-weight:600;}
+  .estcard .body{padding:20px 22px;}
+  .estrow{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--line);color:var(--muted);}
+  .estrow:last-child{border:none;}
+  .estrow b{color:var(--ink);font-weight:600;text-align:right;}
+  .disc{font-size:11.5px;color:var(--muted);margin-top:12px;}
+  /* before/after slider */
+  .ba{position:relative;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:18px;line-height:0;user-select:none;}
+  .ba .layer{position:absolute;inset:0;width:100%;height:100%;}
+  .ba .layer svg,.ba .base svg{width:100%;height:100%;display:block;}
+  .ba .after{clip-path:inset(0 50% 0 0);}
+  .ba .divider{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;transform:translateX(-1.5px);box-shadow:0 0 6px rgba(0,0,0,.4);pointer-events:none;}
+  .ba .knob{position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;pointer-events:none;color:var(--red);}
+  .ba input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0;}
+  .ba .cap{position:absolute;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:3px 9px;border-radius:20px;line-height:1.4;}
+  .ba .cap.b{left:10px;} .ba .cap.a{right:10px;}
+  .ba-title{font-size:13px;font-weight:700;color:var(--ink);margin:2px 0 8px;display:flex;align-items:center;gap:6px;}
+  .ba-title svg{color:var(--red);}
+  .lead .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .lead .fld{margin-bottom:0;}
+  .lead .fld.full{grid-column:1/-1;}
+  .done{text-align:center;padding:14px 0;}
+  .done .check{width:72px;height:72px;border-radius:50%;background:var(--green);margin:0 auto 18px;display:flex;align-items:center;justify-content:center;}
+  .trust{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
+  .trust .t{font-size:11.5px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 11px;color:var(--ink);font-weight:600;display:flex;align-items:center;gap:5px;}
+  .trust .t svg{color:var(--red);}
+  footer{padding:16px 20px;text-align:center;font-size:12px;color:var(--muted);border-top:1px solid var(--line);}
+  footer a{color:var(--red);text-decoration:none;font-weight:600;}
+  .pill{display:inline-block;background:#eafaf0;color:var(--green);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;}
+  @media(max-width:430px){h1{font-size:21px}.lead .grid2{grid-template-columns:1fr}.pic{width:66px;height:66px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="mark">TB</div>
+      <div class="name">Twin Bridge Roofing &amp; Construction<span>Roofing · Siding · Gutters · RoofQC.com</span></div>
+    </div>
+    <div class="badge">🏆 QCBR<br><b>Remodeler of the Year</b></div>
+  </header>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <main id="main"></main>
+  <footer>Quad Cities' Trusted Roofing &amp; Exterior Experts · <a href="tel:5636554902">(563) 655-4902</a> · Licensed &amp; Insured</footer>
+</div>
+
+<script>
+/* ============ VISUALS (original inline SVG art — swap for real Project Gallery photos in production) ============ */
+const ART = {
+  hero:`<svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe9ff"/><stop offset="1" stop-color="#eef7ff"/></linearGradient></defs>
+    <rect width="640" height="170" fill="url(#sky)"/>
+    <circle cx="560" cy="42" r="26" fill="#ffd24a"/>
+    <rect y="128" width="640" height="42" fill="#8ec06c"/>
+    <g transform="translate(70 44)"><rect x="0" y="46" width="150" height="60" fill="#f1ede6"/><rect x="18" y="70" width="30" height="36" fill="#7a5b3a"/><rect x="92" y="66" width="34" height="26" fill="#bfe3ff" stroke="#fff" stroke-width="3"/><path d="M-14 46 L75 -6 L164 46 Z" fill="#e31e24"/><path d="M-14 46 L75 -6 L164 46 Z" fill="none" stroke="#b8171c" stroke-width="2"/><g stroke="#c2181d" stroke-width="2" opacity=".5"><path d="M8 40 L142 40"/><path d="M26 28 L124 28"/><path d="M44 16 L106 16"/></g></g>
+    <g transform="translate(330 66)"><rect x="0" y="34" width="120" height="50" fill="#e9e4db"/><rect x="80" y="52" width="26" height="32" fill="#7a5b3a"/><rect x="16" y="50" width="28" height="22" fill="#bfe3ff" stroke="#fff" stroke-width="3"/><path d="M-12 34 L60 -8 L132 34 Z" fill="#1a1919"/><g stroke="#333" stroke-width="2" opacity=".55"><path d="M4 28 L116 28"/><path d="M20 18 L100 18"/></g></g>
+  </svg>`,
+
+  scene_roof:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#dcecfb"/><rect y="70" width="100" height="30" fill="#8ec06c"/><rect x="24" y="52" width="52" height="30" fill="#f1ede6"/><path d="M14 54 L50 22 L86 54 Z" fill="#e31e24"/><g stroke="#b8171c" stroke-width="1.6" opacity=".55"><path d="M24 48 L76 48"/><path d="M32 40 L68 40"/><path d="M40 32 L60 32"/></g><rect x="44" y="62" width="12" height="20" fill="#7a5b3a"/></svg>`,
+  scene_repair:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#fdeaea"/><path d="M10 60 L50 28 L90 60 Z" fill="#c9c4bb"/><g stroke="#a49f96" stroke-width="1.6"><path d="M20 55 L80 55"/><path d="M28 47 L72 47"/><path d="M36 39 L64 39"/></g><rect x="52" y="40" width="16" height="12" fill="#ffd24a" stroke="#e31e24" stroke-width="1.5"/><g transform="translate(60 60) rotate(45)"><rect x="-3" y="0" width="6" height="20" fill="#e31e24"/><circle cx="0" cy="-2" r="6" fill="none" stroke="#e31e24" stroke-width="3"/></g></svg>`,
+  scene_siding:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#e8f0e2"/><path d="M14 40 L50 14 L86 40 Z" fill="#1a1919"/><rect x="22" y="40" width="56" height="46" fill="#cfd8df"/><g stroke="#9fb0bd" stroke-width="1.8"><path d="M22 50 L78 50"/><path d="M22 58 L78 58"/><path d="M22 66 L78 66"/><path d="M22 74 L78 74"/></g><rect x="44" y="60" width="14" height="26" fill="#7a5b3a"/></svg>`,
+  scene_storm:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#e6e9ef"/><path d="M12 66 L50 40 L88 66 Z" fill="#7d8794"/><rect x="26" y="66" width="48" height="20" fill="#aeb6bf"/><ellipse cx="52" cy="30" rx="30" ry="15" fill="#5b636e"/><ellipse cx="34" cy="34" rx="16" ry="11" fill="#6b7480"/><path d="M50 40 L44 54 L52 54 L46 68" fill="none" stroke="#ffd24a" stroke-width="3"/><g fill="#bcd3ea"><circle cx="26" cy="52" r="2.4"/><circle cx="70" cy="56" r="2.4"/><circle cx="60" cy="48" r="2.2"/></g></svg>`,
+
+  /* material swatches */
+  sw_class3:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#6f6a63"/><g fill="#837d75">${shingleRows('#837d75','#5e5952')}</g></svg>`,
+  sw_class4:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#3f4a55"/>${shingleRows('#4c5866','#333b44')}<path d="M46 8 l8 3 v6 c0 5 -4 8 -8 10 c-4 -2 -8 -5 -8 -10 v-6 z" fill="#ffd24a" stroke="#1a1919" stroke-width="1"/></svg>`,
+  sw_synth:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#4a5560"/>${slateRows()}</svg>`,
+  sw_help:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#eef2f6"/><text x="30" y="40" font-size="34" font-weight="800" text-anchor="middle" fill="#e31e24" font-family="Arial">?</text></svg>`,
+  sw_vinyl:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#dfe6ec"/>${lapRows('#c7d2da')}</svg>`,
+  sw_comp:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#b7a793"/>${lapRows('#a08e78')}</svg>`,
+  sw_steel:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mtl" x1="0" x2="1"><stop offset="0" stop-color="#aeb7c0"/><stop offset=".5" stop-color="#e2e8ee"/><stop offset="1" stop-color="#9aa4ae"/></linearGradient></defs><rect width="60" height="60" fill="url(#mtl)"/><g stroke="#8a949e" stroke-width="1.5">${[10,20,30,40,50].map(x=>`<path d="M${x} 0 L${x} 60"/>`).join('')}</g></svg>`
+};
+function shingleRows(a,b){let s='';for(let r=0;r<5;r++){const y=8+r*11;for(let c=0;c<6;c++){const x=(r%2?5:0)+c*11;s+=`<rect x="${x}" y="${y}" width="10" height="9" fill="${c%2?a:b}"/>`;}}return s;}
+function slateRows(){let s='';for(let r=0;r<5;r++){const y=6+r*11;for(let c=0;c<5;c++){const x=(r%2?6:0)+c*12;s+=`<rect x="${x}" y="${y}" width="11" height="10" rx="1.5" fill="${(r+c)%2?'#5a6570':'#414b55'}"/>`;}}return s;}
+function lapRows(c){let s='';for(let r=0;r<6;r++){s+=`<rect x="0" y="${r*10}" width="60" height="8" fill="${c}"/>`;}return s;}
+
+/* ============ PRICING CONFIG ============ */
+const SERVICES = {
+  "roof-replacement": {
+    label:"Roof Replacement", scene:"scene_roof", tag:"Full roof, priced per square foot",
+    steps:[
+      {key:"address", type:"text", q:"What's the property address?",
+       hint:"In production this auto-measures your roof from satellite (your Google Solar tool). For this demo, set the size on the next screen.",
+       placeholder:"123 Main St, Moline, IL"},
+      {key:"size", type:"slider", q:"About how big is your roof?",
+       hint:"Drag to your roof size. Auto-filled from the address in the live version.",
+       min:900,max:4000,step:50,def:1800,unit:"sq ft"},
+      {key:"material", type:"choice", q:"What roofing material would you like?",
+       opts:[
+         {t:"Class 3 Shingles", sm:"Impact-resistant architectural — the QC standard", img:"sw_class3", mult:1.00},
+         {t:"Class 4 Shingles", sm:"Top impact rating — may lower your insurance", img:"sw_class4", mult:1.20, tag:"Popular"},
+         {t:"Synthetic (Slate/Shake)", sm:"Premium look, lightweight, 50-yr class", img:"sw_synth", mult:1.75},
+         {t:"Not sure — help me choose", sm:"We'll walk you through it on inspection", img:"sw_help", mult:1.00}
+       ]},
+      {key:"steep", type:"choice", q:"How steep is your roof?",
+       opts:[
+         {t:"Low / walkable", sm:"Easy pitch", mult:1.00},
+         {t:"Moderate", sm:"Standard pitch", mult:1.15},
+         {t:"Steep", sm:"Hard to walk", mult:1.30}
+       ]},
+      {key:"timing", type:"choice", q:"When are you looking to get this done?",
+       opts:[{t:"As soon as possible",sm:""},{t:"1–3 months",sm:""},{t:"Just researching",sm:""}]}
+    ],
+    compute(a){ const size=a.size||1800, base=[5.50,7.50], m=a.material.mult, s=a.steep.mult;
+      return [size*base[0]*m*s, size*base[1]*m*s]; }
+  },
+  "roof-repair": {
+    label:"Roof Repair", scene:"scene_repair", tag:"Leaks, missing shingles, storm patches",
+    steps:[
+      {key:"problem", type:"choice", q:"What's going on with your roof?",
+       opts:[
+         {t:"Minor leak in one spot", sm:"", base:[200,600]},
+         {t:"Missing / damaged shingles", sm:"", base:[300,900]},
+         {t:"Storm damage / multiple areas", sm:"", base:[1200,3800]},
+         {t:"Not sure — need it looked at", sm:"", base:[200,3800]}
+       ]},
+      {key:"material", type:"choice", q:"What roofing material do you have?",
+       opts:[
+         {t:"Class 3 Shingles", sm:"Architectural asphalt", img:"sw_class3", mult:1.00},
+         {t:"Class 4 Shingles", sm:"Impact-resistant asphalt", img:"sw_class4", mult:1.10},
+         {t:"Synthetic (Slate/Shake)", sm:"Premium synthetic", img:"sw_synth", mult:1.45},
+         {t:"Not sure", sm:"", img:"sw_help", mult:1.10}
+       ]},
+      {key:"access", type:"choice", q:"How easy is the roof to get to?",
+       opts:[
+         {t:"Easy / single story", sm:"", mult:1.00},
+         {t:"Moderate", sm:"", mult:1.15},
+         {t:"Difficult / steep / tall", sm:"", mult:1.30}
+       ]}
+    ],
+    compute(a){ const b=a.problem.base, m=a.material.mult*a.access.mult; return [b[0]*m, b[1]*m]; }
+  },
+  "siding": {
+    label:"Siding Replacement", scene:"scene_siding", tag:"Vinyl, composite or steel",
+    steps:[
+      {key:"size", type:"choice", q:"What size is your home?",
+       opts:[
+         {t:"Small", sm:"≈ 1 story, under 1,500 sq ft", base:[7000,13000]},
+         {t:"Medium", sm:"≈ 1,500–2,200 sq ft", base:[9000,18000]},
+         {t:"Large", sm:"≈ 2,200–3,000 sq ft", base:[12000,24000]},
+         {t:"Extra Large", sm:"≈ 3,000–4,000 sq ft", base:[15000,30000]},
+         {t:"Very Large", sm:"Over 4,000 sq ft", base:[19000,38000]},
+         {t:"Not sure", sm:"We'll measure it", base:[12000,24000]}
+       ]},
+      {key:"material", type:"choice", q:"What siding material do you want?",
+       opts:[
+         {t:"Vinyl", sm:"Most popular", img:"sw_vinyl", mult:1.00},
+         {t:"Composite", sm:"Premium look", img:"sw_comp", mult:1.25},
+         {t:"Steel", sm:"Most durable", img:"sw_steel", mult:1.40},
+         {t:"Not sure", sm:"", img:"sw_help", mult:1.00}
+       ]},
+      {key:"tearoff", type:"choice", q:"Does the old siding need to come off first?",
+       opts:[
+         {t:"Yes, remove old siding", sm:"", mult:1.15},
+         {t:"No / not sure", sm:"", mult:1.00}
+       ]}
+    ],
+    compute(a){ const b=a.size.base, m=a.material.mult*a.tearoff.mult; return [b[0]*m, b[1]*m]; }
+  },
+  "storm": {
+    label:"Storm Damage", scene:"scene_storm", tag:"Free inspection + insurance help", inspectionOnly:true,
+    steps:[
+      {key:"what", type:"choice", q:"What kind of storm damage are you dealing with?",
+       opts:[{t:"Hail",sm:""},{t:"Wind",sm:""},{t:"Fallen tree / debris",sm:""},{t:"Not sure — looks off",sm:""}]},
+      {key:"when", type:"choice", q:"When did the storm hit?",
+       opts:[{t:"In the last 30 days",sm:""},{t:"1–6 months ago",sm:""},{t:"Not sure",sm:""}]},
+      {key:"claim", type:"choice", q:"Have you filed an insurance claim yet?",
+       opts:[{t:"Not yet",sm:"We can help"},{t:"Yes, already filed",sm:""},{t:"Not sure how",sm:"We'll walk you through it"}]}
+    ]
+  }
+};
+
+/* ============ PRODUCTION CONFIG (fill these in at deploy) ============ */
+const CONFIG = {
+  // Paste the X360 (GoHighLevel) Inbound Webhook URL here to send leads live.
+  // When empty, the widget runs in demo mode (no data leaves the page).
+  X360_LEAD_WEBHOOK: "https://services.leadconnectorhq.com/hooks/M9VHO94IcX1ZpQpZrvNj/webhook-trigger/5f14c90b-3617-4e4b-bf6a-eb2fe810a004",
+  // Google Solar auto-measure: lift the referrer-locked key + logic from the
+  // existing tool at tools.roofqc.com when hosted on the roofqc.com domain.
+  SOLAR_ENABLED: false
+};
+
+/* ============ BEFORE / AFTER ART (swap for real Job Photos on production) ============ */
+const BA = {
+  roofBefore:`<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="240" fill="#c9cdd2"/><rect y="150" width="400" height="90" fill="#7f8a6f"/><rect x="90" y="120" width="220" height="70" fill="#d9d2c6"/><path d="M60 124 L200 44 L340 124 Z" fill="#8b8f93"/><g stroke="#6f7377" stroke-width="2" opacity=".7"><path d="M96 116 L304 116"/><path d="M118 100 L282 100"/><path d="M140 84 L260 84"/><path d="M162 68 L238 68"/></g><g fill="#5f6367"><rect x="150" y="92" width="14" height="9"/><rect x="210" y="76" width="14" height="9"/><rect x="176" y="108" width="14" height="9"/></g><rect x="180" y="150" width="40" height="40" fill="#5b4630"/></svg>`,
+  roofAfter:`<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bsky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#bfe3ff"/><stop offset="1" stop-color="#eef7ff"/></linearGradient></defs><rect width="400" height="240" fill="url(#bsky)"/><circle cx="345" cy="46" r="22" fill="#ffd24a"/><rect y="150" width="400" height="90" fill="#8ec06c"/><rect x="90" y="120" width="220" height="70" fill="#f3efe8"/><path d="M60 124 L200 44 L340 124 Z" fill="#e31e24"/><path d="M60 124 L200 44 L340 124 Z" fill="none" stroke="#b8171c" stroke-width="2"/><g stroke="#c2181d" stroke-width="2" opacity=".55"><path d="M96 116 L304 116"/><path d="M118 100 L282 100"/><path d="M140 84 L260 84"/><path d="M162 68 L238 68"/></g><rect x="180" y="150" width="40" height="40" fill="#6f5334"/><rect x="120" y="150" width="34" height="26" fill="#bfe3ff" stroke="#fff" stroke-width="3"/><rect x="246" y="150" width="34" height="26" fill="#bfe3ff" stroke="#fff" stroke-width="3"/></svg>`,
+  sideBefore:`<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="240" fill="#c9cdd2"/><rect y="160" width="400" height="80" fill="#7f8a6f"/><path d="M70 96 L200 30 L330 96 Z" fill="#5a5f64"/><rect x="96" y="96" width="208" height="94" fill="#b7b1a6"/><g stroke="#9a948a" stroke-width="2" opacity=".8"><path d="M96 112 L304 112"/><path d="M96 128 L304 128"/><path d="M96 144 L304 144"/><path d="M96 160 L304 160"/><path d="M96 176 L304 176"/></g><g fill="#8a857c"><rect x="150" y="120" width="30" height="6"/><rect x="230" y="150" width="24" height="6"/></g><rect x="184" y="150" width="34" height="40" fill="#5b4630"/></svg>`,
+  sideAfter:`<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bsky2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#bfe3ff"/><stop offset="1" stop-color="#eef7ff"/></linearGradient></defs><rect width="400" height="240" fill="url(#bsky2)"/><rect y="160" width="400" height="80" fill="#8ec06c"/><path d="M70 96 L200 30 L330 96 Z" fill="#1a1919"/><rect x="96" y="96" width="208" height="94" fill="#cfd8df"/><g stroke="#a9bac6" stroke-width="2"><path d="M96 112 L304 112"/><path d="M96 128 L304 128"/><path d="M96 144 L304 144"/><path d="M96 160 L304 160"/><path d="M96 176 L304 176"/></g><rect x="184" y="150" width="34" height="40" fill="#6f5334"/><rect x="120" y="150" width="30" height="24" fill="#bfe3ff" stroke="#fff" stroke-width="3"/><rect x="250" y="150" width="30" height="24" fill="#bfe3ff" stroke="#fff" stroke-width="3"/></svg>`
+};
+function baBlock(service){
+  const roofish = (service==='roof-replacement'||service==='roof-repair'||service==='storm');
+  const before = roofish ? BA.roofBefore : BA.sideBefore;
+  const after  = roofish ? BA.roofAfter  : BA.sideAfter;
+  return `
+    <div class="ba-title">${camIcon()} See the Twin Bridge difference — drag to compare</div>
+    <div class="ba" id="ba">
+      <div class="base">${before}</div>
+      <div class="layer after" id="baAfter">${after}</div>
+      <div class="divider" id="baDiv"></div>
+      <div class="knob" id="baKnob">${arrowsIcon()}</div>
+      <span class="cap b">Before</span><span class="cap a">After</span>
+      <input type="range" min="0" max="100" value="50" id="baRange"
+        oninput="baSet(this.value)">
+    </div>`;
+}
+window.baSet = pct => {
+  const a=document.getElementById('baAfter'), d=document.getElementById('baDiv'), k=document.getElementById('baKnob');
+  if(!a) return;
+  a.style.clipPath = `inset(0 ${100-pct}% 0 0)`;
+  d.style.left = pct+'%'; k.style.left = pct+'%';
+};
+
+let state = { screen:'intro', service:null, step:0, answers:{}, size:1800 };
+const main = document.getElementById('main');
+const bar = document.getElementById('bar');
+const money = n => '$'+(Math.round(n/50)*50).toLocaleString();
+
+function totalSteps(){ return state.service ? SERVICES[state.service].steps.length : 1; }
+function setProgress(){
+  let pct=6;
+  if(state.screen==='quiz') pct = 10 + (state.step/totalSteps())*55;
+  else if(state.screen==='estimate') pct=70;
+  else if(state.screen==='lead') pct=85;
+  else if(state.screen==='done') pct=100;
+  bar.style.width=pct+'%';
+}
+function render(){
+  setProgress();
+  ({intro:renderIntro,quiz:renderQuiz,estimate:renderEstimate,lead:renderLead,done:renderDone})[state.screen]();
+}
+
+function renderIntro(){
+  main.innerHTML = `
+    <div class="step">
+      <div class="hero">${ART.hero}</div>
+      <span class="pill">● Free · Takes 30 seconds</span>
+      <div class="eyebrow">Instant Estimate</div>
+      <h1>What can we help you with?</h1>
+      <p class="sub">Get a real ballpark price for your Quad Cities home — no waiting on a callback.</p>
+      <div class="cards">
+        ${Object.entries(SERVICES).map(([k,s])=>`
+          <button class="opt" onclick="pickService('${k}')">
+            <span class="pic">${ART[s.scene]}</span>
+            <span>${s.label}<span class="sm">${s.tag}</span></span>
+            <span class="chev">${chev()}</span>
+          </button>`).join('')}
+      </div>
+    </div>`;
+}
+window.pickService = k => { state.service=k; state.step=0; state.answers={}; state.screen='quiz'; render(); };
+
+function renderQuiz(){
+  const s = SERVICES[state.service];
+  const step = s.steps[state.step];
+  let inner='';
+  if(step.type==='choice'){
+    inner = `<div class="cards">${step.opts.map((o,i)=>`
+      <button class="opt" onclick="answer(${i})">
+        ${o.img?`<span class="swatch">${ART[o.img]}</span>`:''}
+        <span>${o.t}${o.sm?`<span class="sm">${o.sm}</span>`:''}${o.tag?`<span class="tag">${o.tag}</span>`:''}</span>
+        <span class="chev">${chev()}</span>
+      </button>`).join('')}</div>`;
+  } else if(step.type==='slider'){
+    inner = `
+      <div class="field">
+        <div class="sizeout" id="sizeout">${state.size.toLocaleString()} <small>${step.unit}</small></div>
+        <input type="range" min="${step.min}" max="${step.max}" step="${step.step}" value="${state.size}"
+          oninput="document.getElementById('sizeout').innerHTML=(+this.value).toLocaleString()+' <small>${step.unit}</small>';state.size=+this.value;">
+        <div class="rangelabels"><span>${step.min.toLocaleString()}</span><span>${step.max.toLocaleString()}+</span></div>
+      </div>
+      <div class="note">${infoIcon()}<span>${step.hint}</span></div>`;
+  } else if(step.type==='text'){
+    inner = `
+      <div class="addrwrap">
+        <input type="text" id="txt" autocomplete="off" placeholder="${step.placeholder||''}" value="${state.answers[step.key]?.raw||''}" oninput="addrInput(this.value)">
+        <div class="addrsug" id="addrsug"></div>
+      </div>
+      <div class="note">${infoIcon()}<span>${step.hint}</span></div>`;
+  }
+  main.innerHTML = `
+    <div class="step">
+      <div class="eyebrow">${s.label} · Step ${state.step+1} of ${s.steps.length}</div>
+      <h1>${step.q}</h1>
+      <div style="height:12px"></div>
+      ${inner}
+      <div class="nav">
+        <button class="btn-ghost btn" onclick="back()">←</button>
+        ${step.type!=='choice'?`<button class="btn btn-primary" onclick="nextFromField()">Continue</button>`:''}
+      </div>
+    </div>`;
+}
+window.answer = i => { const s=SERVICES[state.service], step=s.steps[state.step]; state.answers[step.key]=step.opts[i]; advance(); };
+window.nextFromField = () => {
+  const s=SERVICES[state.service], step=s.steps[state.step];
+  if(step.type==='slider'){ state.answers[step.key]={raw:state.size,t:state.size.toLocaleString()+' sq ft'}; }
+  if(step.type==='text'){ state.answers[step.key]={raw:document.getElementById('txt').value}; }
+  advance();
+};
+function advance(){
+  const s=SERVICES[state.service];
+  if(state.step < s.steps.length-1){ state.step++; render(); }
+  else { state.screen='lead'; render(); }   // capture the lead BEFORE showing any price
+}
+window.back = () => {
+  if(state.step>0){ state.step--; render(); } else { state.screen='intro'; state.service=null; render(); }
+};
+
+/* Address autocomplete — free (Photon/OpenStreetMap), biased to the Quad Cities.
+   For production on roofqc.com, swap to Google Places Autocomplete with the account's key for best US coverage. */
+let _addrTimer=null;
+window.addrInput = (q) => {
+  const box=document.getElementById('addrsug'); if(!box) return;
+  state.answers.address={raw:q};
+  clearTimeout(_addrTimer);
+  if(!q || q.length<4){ box.style.display='none'; box.innerHTML=''; return; }
+  _addrTimer=setTimeout(async ()=>{
+    try{
+      const url=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=en&lat=41.52&lon=-90.57`;
+      const j=await (await fetch(url)).json();
+      const items=(j.features||[]).map(f=>{
+        const p=f.properties||{};
+        const label=[[p.housenumber,p.street].filter(Boolean).join(' '), p.city||p.name, [p.state,p.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+        return {label, zip:p.postcode||''};
+      }).filter(x=>x.label);
+      if(!items.length){ box.style.display='none'; return; }
+      box._items=items;
+      box.innerHTML=items.map((it,i)=>`<div class="addropt" onclick="pickAddr(${i})">${pinIcon()}<span>${it.label}</span></div>`).join('');
+      box.style.display='block';
+    }catch(e){ box.style.display='none'; }
+  }, 250);
+};
+window.pickAddr = (i) => {
+  const box=document.getElementById('addrsug'); const it=(box._items||[])[i]; if(!it) return;
+  const inp=document.getElementById('txt'); if(inp) inp.value=it.label;
+  state.answers.address={raw:it.label};
+  if(it.zip) state.addrZip=it.zip;
+  box.style.display='none'; box.innerHTML='';
+};
+
+// Build the compute input: only override 'size' with the numeric slider value
+// for services that actually have a slider (roof replacement). For siding etc.,
+// 'size' is a multiple-choice answer and must be left as-is.
+function estInput(){
+  const o = {...state.answers};
+  if(SERVICES[state.service].steps.some(st=>st.type==='slider')) o.size = state.size;
+  return o;
+}
+function renderEstimate(){
+  const s=SERVICES[state.service];
+  const a=estInput();
+  const [lo,hi]=s.compute(a);
+  const mid=(lo+hi)/2;
+  const mo=Math.round((mid*(0.0999/12))/(1-Math.pow(1+0.0999/12,-120))/5)*5;
+  const first = state.lead ? state.lead.name.split(' ')[0] : 'there';
+  main.innerHTML = `
+    <div class="step">
+      <div class="eyebrow">Your Instant Estimate</div>
+      <h1>Thanks, ${first}! Here's your ${s.label.toLowerCase()} estimate</h1>
+      <p class="sub">A detailed written estimate is on its way to ${state.lead?state.lead.email:'your email'} — and we'll call to schedule your free on-site estimate to lock in the exact price.</p>
+      <div class="estcard">
+        <div class="top">
+          <div class="lbl">Estimated Project Range</div>
+          <div class="amt">${money(lo)} – ${money(hi)}</div>
+          <div class="fin">or as low as ~$${mo.toLocaleString()}/mo with financing*</div>
+        </div>
+        <div class="body">
+          ${summaryRows(s)}
+          <p class="disc">*Illustrative only (sample 10-yr term). Actual financing set by your provider. This range is a ballpark, not a formal quote — final price confirmed after a free inspection.</p>
+        </div>
+      </div>
+      ${baBlock(state.service)}
+      <div class="nav">
+        <button class="btn-ghost btn" onclick="location.reload()">Start over</button>
+        <button class="btn btn-primary" onclick="window.location.href='tel:5636554902'">Call (563) 655-4902</button>
+      </div>
+      ${trust()}
+    </div>`;
+}
+function summaryRows(s){
+  return s.steps.filter(st=>st.type==='choice'||st.type==='slider').map(st=>{
+    const ans=state.answers[st.key];
+    let v = st.type==='slider' ? (state.size.toLocaleString()+' sq ft') : (ans?ans.t:'—');
+    return `<div class="estrow"><span>${st.q}</span><b>${v}</b></div>`;
+  }).join('');
+}
+window.toLead = () => { state.screen='lead'; render(); };
+
+function renderLead(){
+  const s=SERVICES[state.service];
+  const headline = s.inspectionOnly ? "Book your free storm inspection" : "Your instant estimate is ready";
+  const subtxt = s.inspectionOnly
+    ? "We'll document the damage, help with your insurance claim, and never quote a repair price that could hurt your claim."
+    : "Enter your details to see your price. We'll also email a detailed written estimate and call to schedule your free, no-pressure on-site estimate.";
+  main.innerHTML = `
+    <div class="step lead">
+      <div class="eyebrow">${s.inspectionOnly?'Free Inspection':'One last step'}</div>
+      <h1>${headline}</h1>
+      <p class="sub">${subtxt}</p>
+      <div class="grid2">
+        <div class="fld"><input type="text" id="f_name" placeholder="Full name *"></div>
+        <div class="fld"><input type="tel" id="f_phone" placeholder="Phone *"></div>
+        <div class="fld full"><input type="email" id="f_email" placeholder="Email *"></div>
+        <div class="fld full"><input type="text" id="f_zip" placeholder="Property ZIP code *" value="${state.addrZip||''}"></div>
+      </div>
+      <div class="nav">
+        <button class="btn-ghost btn" onclick="${s.inspectionOnly?"back()":"state.screen='quiz';render()"}">←</button>
+        <button class="btn btn-primary" onclick="submitLead()">${s.inspectionOnly?'Book free inspection':'Unlock my estimate →'}</button>
+      </div>
+      <div class="note" style="margin-top:14px;background:#eef7ff;border-color:#bfe0ff;color:#3a6ea5;">${lockIcon()}<span>Your info is safe. We only use it to prepare your estimate and schedule your inspection — no spam.</span></div>
+    </div>`;
+}
+window.submitLead = async () => {
+  const name=v('f_name'), phone=v('f_phone'), email=v('f_email'), zip=v('f_zip');
+  if(!name||!phone||!email||!zip){ alert('Please fill in name, phone, email, and ZIP.'); return; }
+  const s=SERVICES[state.service];
+  let est='Free inspection requested';
+  if(!s.inspectionOnly){ const a=estInput(); const [lo,hi]=s.compute(a); est=money(lo)+' – '+money(hi); }
+  const details = s.steps.filter(st=>st.type==='choice'||st.type==='slider')
+    .map(st=> st.q+': '+(st.type==='slider'? state.size.toLocaleString()+' sq ft' : (state.answers[st.key]?.t||'—'))).join(' | ');
+  const payload = { source:'Instant Estimator (roofqc.com)', full_name:name, phone, email, postal_code:zip,
+    service:s.label, estimate_range:est, details, address: state.answers.address?.raw || '' };
+  state.lead={name,phone,email,zip};
+  const btn=document.querySelector('.lead .btn-primary'); if(btn){ btn.textContent='Sending…'; btn.disabled=true; }
+  if(CONFIG.X360_LEAD_WEBHOOK){
+    try{ await fetch(CONFIG.X360_LEAD_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
+    catch(e){ /* lead still shown to user; server-side retry/queue if needed */ }
+  }
+  // Lead captured — NOW reveal the price (storm stays a no-price free-inspection confirmation)
+  state.screen = s.inspectionOnly ? 'done' : 'estimate'; render();
+};
+function v(id){return (document.getElementById(id).value||'').trim();}
+
+function renderDone(){
+  const s=SERVICES[state.service];
+  main.innerHTML = `
+    <div class="step done">
+      <div class="check"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h1>You're all set, ${state.lead.name.split(' ')[0]}!</h1>
+      <p class="sub">${s.inspectionOnly
+        ? "Your free storm inspection request is in. We'll call shortly to lock in a time and walk you through the insurance side."
+        : "Your estimate is on its way to "+state.lead.email+". We'll reach out to schedule your free inspection."}</p>
+      <div class="estcard" style="text-align:left;margin-top:6px;"><div class="body">
+        <div class="estrow"><span>Service</span><b>${s.label}</b></div>
+        <div class="estrow"><span>Name</span><b>${state.lead.name}</b></div>
+        <div class="estrow"><span>Phone</span><b>${state.lead.phone}</b></div>
+        <div class="estrow"><span>ZIP</span><b>${state.lead.zip}</b></div>
+      </div></div>
+      <div class="nav"><button class="btn btn-primary" onclick="location.reload()">Start over</button></div>
+      ${trust()}
+    </div>`;
+}
+
+function trust(){
+  return `<div class="trust">
+    <span class="t">${chk()} QCBR Remodeler of the Year 2024</span>
+    <span class="t">${chk()} Winner — 2026 BBB Torch Award for Ethics</span>
+    <span class="t">${chk()} TAMKO Diamond Pro certified</span>
+    <span class="t">${chk()} Lifetime workmanship &amp; materials warranty</span>
+    <span class="t">${chk()} Licensed &amp; insured · family-owned</span>
+    <span class="t">${chk()} Insurance-claim help</span>
+  </div>`;
+}
+function chk(){return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';}
+function chev(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';}
+function infoIcon(){return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';}
+function camIcon(){return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';}
+function arrowsIcon(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg>';}
+function pinIcon(){return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';}
+function lockIcon(){return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';}
+
+render();
+</script>
+</body>
+</html>
