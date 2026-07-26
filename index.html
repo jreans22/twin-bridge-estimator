@@ -559,7 +559,7 @@ function renderLead(){
       </div>
       <div class="nav">
         <button class="btn-ghost btn" onclick="${s.inspectionOnly?"back()":"state.screen='quiz';render()"}">←</button>
-        <button class="btn btn-primary" onclick="submitLead()">${s.inspectionOnly?'Book free inspection':'Unlock my estimate →'}</button>
+        <div class="fld full" style="margin-top:6px"><label style="display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:#555;cursor:pointer"><input type="checkbox" id="f_sms_t" style="width:16px;height:16px;margin-top:2px;flex:0 0 auto"><span>Text me updates about my project. I agree to receive transactional text messages from Twin Bridge Construction LLC, doing business as Twin Bridge Roofing &amp; Construction, at the number provided - appointment confirmations, reminders, crew arrival notices and project updates. Message frequency varies. Message &amp; data rates may apply. Reply HELP for help, STOP to opt out.</span></label></div><div class="fld full" style="margin-top:8px"><label style="display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:#555;cursor:pointer"><input type="checkbox" id="f_sms_p" style="width:16px;height:16px;margin-top:2px;flex:0 0 auto"><span>Text me seasonal offers and storm alerts. I agree to receive marketing and promotional text messages from Twin Bridge Construction LLC, doing business as Twin Bridge Roofing &amp; Construction, at the number provided. Consent is not a condition of purchase. Message frequency varies. Message &amp; data rates may apply. Reply HELP for help, STOP to opt out.</span></label></div><div class="fld full" style="margin-top:10px;font-size:12px;color:#777"><a href="https://www.roofqc.com/privacy-policy" target="_blank" rel="noopener" style="color:#c8102e">Privacy Policy</a> | <a href="https://www.roofqc.com/terms" target="_blank" rel="noopener" style="color:#c8102e">Terms of Service</a></div><button class="btn btn-primary" onclick="submitLead()">${s.inspectionOnly?'Book free inspection':'Unlock my estimate →'}</button>
       </div>
       <div class="note" style="margin-top:14px;background:#eef7ff;border-color:#bfe0ff;color:#3a6ea5;">${lockIcon()}<span>Your info is safe. We only use it to prepare your estimate and schedule your free on-site estimate — no spam.</span></div>
     </div>`;
@@ -572,7 +572,7 @@ window.submitLead = async () => {
   if(!s.inspectionOnly){ const a=estInput(); const [lo,hi]=s.compute(a); est=money(lo)+' – '+money(hi); }
   const details = s.steps.filter(st=>st.type==='choice'||st.type==='slider')
     .map(st=> st.q+': '+(st.type==='slider'? state.size.toLocaleString()+' sq ft' : (state.answers[st.key]?.t||'—'))).join(' | ');
-  const payload = { source:'Instant Estimator (roofqc.com)', full_name:name, phone, email, postal_code:zip,
+  const payload = { source:'Instant Estimator (roofqc.com)', full_name:name, phone, email, postal_code:zip, sms_transactional_consent:(document.getElementById('f_sms_t')||{}).checked===true, sms_promotional_consent:(document.getElementById('f_sms_p')||{}).checked===true,
     service:s.label, estimate_range:est, details, address: state.answers.address?.raw || '' };
   state.lead={name,phone,email,zip};
   const btn=document.querySelector('.lead .btn-primary'); if(btn){ btn.textContent='Sending…'; btn.disabled=true; }
