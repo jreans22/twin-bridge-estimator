@@ -175,8 +175,8 @@ const SERVICES = {
       {key:"material", type:"choice", q:"What roofing material would you like?",
        opts:[
          {t:"Class 3 Shingles", sm:"TAMKO Titan XT — premium architectural, the QC standard", img:"sw_class3", mult:1.00},
-         {t:"Class 4 Shingles", sm:"Stormfighter Flex — Class 4 impact-rated, may lower insurance", img:"sw_class4", mult:1.20, tag:"Popular"},
-         {t:"Synthetic (Slate/Shake)", sm:"Brava — premium synthetic slate/shake, 50-yr", img:"sw_synth", mult:1.75},
+         {t:"Class 4 Shingles", sm:"Stormfighter Flex — Class 4 impact-rated, may lower insurance", img:"sw_class4", mult:1.15, tag:"Popular"},
+         {t:"Synthetic (Slate/Shake)", sm:"Brava — premium synthetic slate/shake, 50-yr", img:"sw_synth", mult:1.75, base:[19.00,28.00]},
          {t:"Not sure — help me choose", sm:"We'll help you pick on your free estimate", img:"sw_help", mult:1.00}
        ]},
       {key:"steep", type:"choice", q:"How steep is your roof?",
@@ -188,7 +188,7 @@ const SERVICES = {
       {key:"timing", type:"choice", q:"When are you looking to get this done?",
        opts:[{t:"As soon as possible",sm:""},{t:"1–3 months",sm:""},{t:"Just researching",sm:""}]}
     ],
-    compute(a){ const size=a.size||1800, base=[5.50,7.50], m=a.material.mult, s=a.steep.mult;
+    compute(a){ const size=a.size||1800, mb=a.material.base, base=mb?mb:[5.50,7.50], m=mb?1:a.material.mult, s=a.steep.mult;
       return [size*base[0]*m*s, size*base[1]*m*s]; }
   },
   "roof-repair": {
