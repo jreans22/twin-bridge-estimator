@@ -8,8 +8,43 @@ const MIME = {
 };
 const port = process.env.PORT || 3000;
 const root = __dirname;
+
+/* Lead relay: the browser posts the lead payload to /api/lead (same origin, no
+   secrets in the page); this server forwards it to Twin Bridge Central's intake
+   endpoint with the shared secret from Railway env. TBC then writes its own
+   DB AND pushes the lead into AccuLynx server-side. X360 keeps its existing
+   direct webhook from the browser - this path is additive. */
+function relayLead(req, res) {
+  let data = '';
+  req.on('data', (c) => { data += c; if (data.length > 1e6) req.destroy(); });
+  req.on('end', async () => {
+    const url = process.env.TBC_LEAD_URL;
+    const secret = process.env.ESTIMATOR_LEAD_SECRET;
+    if (!url || !secret) {
+      res.writeHead(202, { 'Content-Type': 'application/json' });
+      res.end('{"ok":false,"relay":"unconfigured"}');
+      return;
+    }
+    try {
+      const r = await fetch(url + '?key=' + encodeURIComponent(secret), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: data,
+        signal: AbortSignal.timeout(20000)
+      });
+      const text = await r.text();
+      res.writeHead(r.status, { 'Content-Type': 'application/json' });
+      res.end(text);
+    } catch (e) {
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end('{"ok":false,"relay":"failed"}');
+    }
+  });
+}
+
 http.createServer((req, res) => {
   let p = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (req.method === 'POST' && p === '/api/lead') { relayLead(req, res); return; }
   if (p === '/' || p === '') p = '/index.html';
   const safe = path.normalize(p).replace(/^(\.\.[\/\\])+/, '');
   const file = path.join(root, safe);
