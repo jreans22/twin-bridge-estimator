@@ -184,7 +184,7 @@ const SERVICES = {
        placeholder:"123 Main St, Moline, IL"},
       {key:"size", type:"slider", q:"About how big is your roof?",
        hint:"Auto-filled from your address when available — adjust if needed.",
-       min:900,max:5000,step:50,def:1800,unit:"sq ft"},
+       min:900,max:7000,step:50,def:1800,unit:"sq ft"},
       {key:"material", type:"choice", q:"What roofing material would you like?",
        opts:[
          {t:"Class 3 Shingles", sm:"TAMKO Titan XT — premium architectural, the QC standard", img:"sw_class3", mult:1.00},
@@ -502,13 +502,16 @@ async function measureRoof(lat,lon){
     }
     if(!(sqft>0)) return null;
 
-    /* Calibration 2026-08-04, validated against Hover reports:
-       - HIGH imagery: raw area lands within ~1% of Hover (Coal Valley: raw 3,409 vs
-         Hover 3,366). No correction — waste only.
+    /* Calibration 2026-08-04, validated against Hover/EagleView reports:
+       - HIGH imagery, simple roof: raw area lands within ~1% (Coal Valley: raw 3,409 vs
+         Hover 3,366, Solar saw 3 facets). No correction — waste only.
+       - HIGH imagery, very complex roof: Solar misses the small facets (Bettendorf: raw
+         5,417 vs EagleView 6,051 = -10.5%, Solar saw 31 of 39 facets). corr 1.12 when
+         Solar itself reports >= 10 facets lands Bettendorf within 1 sq ft of EagleView.
        - MEDIUM/LOW imagery: Solar under-reads complex roofs badly (Colona: raw 2,622 vs
          Hover 3,997 = -34%; legacy 34th Ave calibration house: ~-26%). corr 1.40 lands
-         Colona within ~1% of Hover. n=2 — refine as more Hover comparisons come in via
-         the webhook diagnostics.
+         Colona within ~1% of Hover. Refine as more report comparisons come in via the
+         webhook diagnostics.
        - Reject tiny reads: raw < 800 sqft means the model grabbed a garage/outbuilding
          or a sliver of the roof (Sciota: 343 "sqft" on a 2,284 sqft farmhouse). Showing
          that number would be embarrassing — fall back to the manual slider instead. */
@@ -517,7 +520,7 @@ async function measureRoof(lat,lon){
       state.measureMeta = { rejected:true, facets:segs.length, quality, rawSqft:Math.round(sqft) };
       return null;
     }
-    const corr = (quality === 'HIGH') ? 1.0 : 1.4;
+    const corr = (quality === 'HIGH') ? (segs.length >= 10 ? 1.12 : 1.0) : 1.4;
     const roofSqft = Math.round(sqft*corr/50)*50;   // best estimate of the roof itself (no waste)
 
     // Stash diagnostics so we can validate against Hover reports later.
