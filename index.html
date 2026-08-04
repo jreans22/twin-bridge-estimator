@@ -449,10 +449,16 @@ window.pickAddr = async (i) => {
 /* ============ SATELLITE AUTO-MEASURE (Google Solar) ============ */
 /* Key is loaded from /config.js (window.SOLAR_KEY), referrer-locked to *.roofqc.com.
    Never hardcoded here so it can be rotated without touching app code. */
-/* cal = calibration factor. Google Solar under-reads roof area (built for solar panels,
-   misses garages/dormers/low-quality sections). Calibrated 2026-07-25 against a real Hover:
-   1423 34th Ave, Rock Island — Hover 1,989 sq ft vs Solar raw ~1,550. Validate on more homes to refine. */
-const SOLAR = { key:(typeof window!=='undefined'&&window.SOLAR_KEY)||'', cap:60, cal:1.25 };
+/* IMPORTANT — 2026-08-01. Google's roofSegmentStats[].stats.areaMeters2 is documented as:
+   "This is the roof area (accounting for tilt), not the ground footprint area."
+   https://developers.google.com/maps/documentation/solar/reference/rest/v1/buildingInsights
+   The old code divided that by cos(pitch), which applied pitch a SECOND time and inflated
+   every quote by 5-41% depending on roof slope. Removed. Do not reintroduce.
+
+   waste = standard roofing waste allowance (cuts, starter course, ridge, valleys).
+   This is a real cost, not a fudge factor. Replaces the old cal:1.25, which was calibrated
+   on a single house (1423 34th Ave, Rock Island) and was compounding on top of the cos bug. */
+const SOLAR = { key:(typeof window!=='undefined'&&window.SOLAR_KEY)||'', cap:60, waste:1.10 };
 function solarDay(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return 'na'; } }
 function solarCapOk(){
   try{ const r=JSON.parse(localStorage.getItem('tbSolar')||'{}'); return r.d!==solarDay() || (r.n||0)<SOLAR.cap; }
@@ -462,20 +468,44 @@ function solarBump(){
   try{ const r=JSON.parse(localStorage.getItem('tbSolar')||'{}'); const n=(r.d===solarDay()?(r.n||0):0)+1;
     localStorage.setItem('tbSolar',JSON.stringify({d:solarDay(),n})); }catch(e){}
 }
+/* requiredQuality is a MINIMUM FLOOR, not a request for a specific tier — Google returns the
+   best model it has that meets or exceeds it. So one call at LOW already gets us the sharpest
+   available model (often HIGH); asking for HIGH first would just 404 on thin-coverage addresses
+   and burn extra API calls. We keep the floor at LOW for max coverage and record what we
+   actually got via response.imageryQuality.
+     HIGH   = low-altitude aerial, 0.10 m/pixel  (best)
+     MEDIUM = high-altitude aerial, 0.25 m/pixel
+     LOW    = satellite,            0.25 m/pixel */
 async function measureRoof(lat,lon){
   try{
     if(!SOLAR.key || lat==null || lon==null) return null;
     if(!solarCapOk()) return null;
+
     const u=`https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude=${lat}&location.longitude=${lon}&requiredQuality=LOW&key=${SOLAR.key}`;
     const r=await fetch(u); if(!r.ok) return null; solarBump();
     const j=await r.json();
+
     const segs=(j&&j.solarPotential&&j.solarPotential.roofSegmentStats)||[];
-    let sqft=0;
-    for(const s of segs){ const a=(s&&s.stats&&s.stats.areaMeters2)||0;
-      const p=((s&&s.pitchDegrees!=null)?s.pitchDegrees:22)*Math.PI/180;
-      const c=Math.max(Math.cos(p),0.5); sqft+=(a/c)*10.7639; }
+    let sqft=0, pitchSum=0;
+    for(const s of segs){
+      const a=(s&&s.stats&&s.stats.areaMeters2)||0;
+      // areaMeters2 already accounts for tilt — convert m2 -> ft2 and nothing else.
+      sqft += a * 10.7639;
+      pitchSum += ((s&&s.pitchDegrees!=null)?s.pitchDegrees:22);
+    }
     if(!(sqft>0)) return null;
-    return Math.round(sqft*SOLAR.cal/50)*50;
+
+    // Stash diagnostics so we can validate against Hover reports later.
+    state.measureMeta = {
+      facets: segs.length,
+      quality: j.imageryQuality || '?',
+      imageryDate: (j.imageryDate && [j.imageryDate.year,j.imageryDate.month,j.imageryDate.day].filter(Boolean).join('-')) || '',
+      rawSqft: Math.round(sqft),
+      avgPitchDeg: segs.length ? Math.round(pitchSum/segs.length) : null,
+      waste: SOLAR.waste
+    };
+
+    return Math.round(sqft*SOLAR.waste/50)*50;
   }catch(e){ return null; }
 }
 async function startMeasure(lat,lon){
@@ -586,7 +616,14 @@ window.submitLead = async () => {
   const details = s.steps.filter(st=>st.type==='choice'||st.type==='slider')
     .map(st=> st.q+': '+(st.type==='slider'? state.size.toLocaleString()+' sq ft' : (state.answers[st.key]?.t||'—'))).join(' | ');
   const payload = { source:'Instant Estimator (roofqc.com)', full_name:name, phone, email, postal_code:zip, sms_transactional_consent:(document.getElementById('f_sms_t')||{}).checked===true, sms_promotional_consent:(document.getElementById('f_sms_p')||{}).checked===true,
-    service:s.label, estimate_range:est, details, address: state.answers.address?.raw || '' };
+    service:s.label, estimate_range:est, details, address: state.answers.address?.raw || '',
+    // measurement diagnostics — lets us compare app vs Hover and tune the waste factor on real data
+    measured_sqft: state.measured || null,
+    measure_facets: state.measureMeta?.facets ?? null,
+    measure_quality: state.measureMeta?.quality || '',
+    measure_imagery_date: state.measureMeta?.imageryDate || '',
+    measure_raw_sqft: state.measureMeta?.rawSqft ?? null,
+    measure_avg_pitch_deg: state.measureMeta?.avgPitchDeg ?? null };
   state.lead={name,phone,email,zip};
   const btn=document.querySelector('.lead .btn-primary'); if(btn){ btn.textContent='Sending…'; btn.disabled=true; }
   if(CONFIG.X360_LEAD_WEBHOOK){
