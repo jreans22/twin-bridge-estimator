@@ -184,7 +184,7 @@ const SERVICES = {
        placeholder:"123 Main St, Moline, IL"},
       {key:"size", type:"slider", q:"About how big is your roof?",
        hint:"Auto-filled from your address when available — adjust if needed.",
-       min:900,max:4000,step:50,def:1800,unit:"sq ft"},
+       min:900,max:5000,step:50,def:1800,unit:"sq ft"},
       {key:"material", type:"choice", q:"What roofing material would you like?",
        opts:[
          {t:"Class 3 Shingles", sm:"TAMKO Titan XT — premium architectural, the QC standard", img:"sw_class3", mult:1.00},
@@ -361,6 +361,13 @@ function renderQuiz(){
     </div>`;
 }
 function measuredBox(){
+  /* Transparency: show the roof itself AND the with-waste material figure separately.
+     A homeowner holding an EagleView/Hover will match the first number — showing only
+     the waste-included figure reads as inflation. */
+  const roof = state.measureMeta && state.measureMeta.roofSqft;
+  if(roof && roof !== state.measured){
+    return `<div class="measured">${checkIcon()}<span>Roof measured from satellite: about ${roof.toLocaleString()} sq ft. We quote ${state.measured.toLocaleString()} sq ft of material to cover cuts, ridge and waste — adjust if needed.</span></div>`;
+  }
   return `<div class="measured">${checkIcon()}<span>Roof measured from satellite: about ${state.measured.toLocaleString()} sq ft. Adjust the slider if needed.</span></div>`;
 }
 window.answer = i => { const s=SERVICES[state.service], step=s.steps[state.step]; state.answers[step.key]=step.opts[i]; advance(); };
@@ -511,6 +518,7 @@ async function measureRoof(lat,lon){
       return null;
     }
     const corr = (quality === 'HIGH') ? 1.0 : 1.4;
+    const roofSqft = Math.round(sqft*corr/50)*50;   // best estimate of the roof itself (no waste)
 
     // Stash diagnostics so we can validate against Hover reports later.
     state.measureMeta = {
@@ -518,6 +526,7 @@ async function measureRoof(lat,lon){
       quality,
       imageryDate: (j.imageryDate && [j.imageryDate.year,j.imageryDate.month,j.imageryDate.day].filter(Boolean).join('-')) || '',
       rawSqft: Math.round(sqft),
+      roofSqft,
       avgPitchDeg: segs.length ? Math.round(pitchSum/segs.length) : null,
       waste: SOLAR.waste,
       corr
