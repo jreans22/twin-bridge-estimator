@@ -495,17 +495,35 @@ async function measureRoof(lat,lon){
     }
     if(!(sqft>0)) return null;
 
+    /* Calibration 2026-08-04, validated against Hover reports:
+       - HIGH imagery: raw area lands within ~1% of Hover (Coal Valley: raw 3,409 vs
+         Hover 3,366). No correction — waste only.
+       - MEDIUM/LOW imagery: Solar under-reads complex roofs badly (Colona: raw 2,622 vs
+         Hover 3,997 = -34%; legacy 34th Ave calibration house: ~-26%). corr 1.40 lands
+         Colona within ~1% of Hover. n=2 — refine as more Hover comparisons come in via
+         the webhook diagnostics.
+       - Reject tiny reads: raw < 800 sqft means the model grabbed a garage/outbuilding
+         or a sliver of the roof (Sciota: 343 "sqft" on a 2,284 sqft farmhouse). Showing
+         that number would be embarrassing — fall back to the manual slider instead. */
+    const quality = j.imageryQuality || '?';
+    if(sqft < 800){
+      state.measureMeta = { rejected:true, facets:segs.length, quality, rawSqft:Math.round(sqft) };
+      return null;
+    }
+    const corr = (quality === 'HIGH') ? 1.0 : 1.4;
+
     // Stash diagnostics so we can validate against Hover reports later.
     state.measureMeta = {
       facets: segs.length,
-      quality: j.imageryQuality || '?',
+      quality,
       imageryDate: (j.imageryDate && [j.imageryDate.year,j.imageryDate.month,j.imageryDate.day].filter(Boolean).join('-')) || '',
       rawSqft: Math.round(sqft),
       avgPitchDeg: segs.length ? Math.round(pitchSum/segs.length) : null,
-      waste: SOLAR.waste
+      waste: SOLAR.waste,
+      corr
     };
 
-    return Math.round(sqft*SOLAR.waste/50)*50;
+    return Math.round(sqft*corr*SOLAR.waste/50)*50;
   }catch(e){ return null; }
 }
 async function startMeasure(lat,lon){
@@ -623,7 +641,8 @@ window.submitLead = async () => {
     measure_quality: state.measureMeta?.quality || '',
     measure_imagery_date: state.measureMeta?.imageryDate || '',
     measure_raw_sqft: state.measureMeta?.rawSqft ?? null,
-    measure_avg_pitch_deg: state.measureMeta?.avgPitchDeg ?? null };
+    measure_avg_pitch_deg: state.measureMeta?.avgPitchDeg ?? null,
+    measure_correction: state.measureMeta?.corr ?? null };
   state.lead={name,phone,email,zip};
   const btn=document.querySelector('.lead .btn-primary'); if(btn){ btn.textContent='Sending…'; btn.disabled=true; }
   if(CONFIG.X360_LEAD_WEBHOOK){
