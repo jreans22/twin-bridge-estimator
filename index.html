@@ -106,11 +106,27 @@
   footer{padding:16px 20px;text-align:center;font-size:12px;color:var(--muted);border-top:1px solid var(--line);background:#fff;}
   footer a{color:var(--red);text-decoration:none;font-weight:600;}
   .pill{display:inline-block;background:#eafaf0;color:var(--green);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;}
+  /* Good / Better / Best roof tier cards */
+  .tiers{display:flex;flex-direction:column;gap:15px;margin:4px 0 18px;}
+  .tier{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:16px;display:flex;gap:14px;padding:14px;box-shadow:var(--shadow);align-items:center;}
+  .tier.hot{border-color:var(--red);border-width:2px;background:#fffbfb;}
+  .tbadge{position:absolute;top:-11px;right:14px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:20px;letter-spacing:.4px;box-shadow:0 2px 8px rgba(227,30,36,.35);}
+  .timg{width:104px;height:90px;border-radius:11px;overflow:hidden;flex:none;border:1px solid var(--line);background:#fff;}
+  .timg img{width:100%;height:100%;object-fit:contain;display:block;}
+  .timg img.fill{object-fit:cover;}
+  .tlbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;color:var(--red);}
+  .tname{font-size:16px;font-weight:800;letter-spacing:-.2px;}
+  .tprod{font-size:12px;color:var(--muted);margin:2px 0 7px;line-height:1.35;}
+  .tprice{font-size:19px;font-weight:800;letter-spacing:-.3px;}
+  .tmo{font-size:12px;color:#b07d0a;font-weight:600;}
+  .repairlink{margin-top:14px;text-align:center;font-size:13px;color:var(--muted);}
+  .repairlink a{color:var(--red);font-weight:700;cursor:pointer;text-decoration:underline;}
   @media(max-width:430px){
     h1{font-size:21px}.sub{font-size:14px}
     main{padding:20px 15px 34px}
     .lead .grid2{grid-template-columns:1fr}
     .pic{width:74px;height:64px}.swatch{width:78px;height:56px}
+    .timg{width:86px;height:78px}.tprice{font-size:17px}.tname{font-size:15px}
     header{padding:11px 15px}header .brand{height:44px}header .award{font-size:9.5px;padding:4px 8px}
     .hero img{height:180px}
     .opt{padding:11px 12px;gap:11px;font-size:15px}
@@ -155,10 +171,11 @@ const PH = {
   roof:     '/roof.jpg?v=1',
   repair:   '/repair.jpg?v=1',
   siding:   rz('69406b7797c023d2b6496248.jpg', 500),
+  gutters:  rz('69447ac9e7887054fd40e7d5.png', 500),
   storm:    '/storm.jpg?v=1',
   showcase: rz('69406abaab2594bc8220009e.jpg', 1000)
 };
-const SERVICE_PHOTO = {'roof-replacement':PH.roof,'roof-repair':PH.repair,'siding':PH.siding,'storm':PH.storm};
+const SERVICE_PHOTO = {'roof-replacement':PH.roof,'roof-repair':PH.repair,'siding':PH.siding,'gutters':PH.gutters,'storm':PH.storm};
 
 /* ============ MATERIAL SWATCHES (small texture chips) ============ */
 const ART = {
@@ -168,16 +185,23 @@ const ART = {
   sw_help:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#eef2f6"/><text x="30" y="40" font-size="34" font-weight="800" text-anchor="middle" fill="#e31e24" font-family="Arial">?</text></svg>`,
   sw_vinyl:`<img class="prod fill" src="${rz('694319eda156350c1870ac90.png',320)}" alt="Royal Estate vinyl siding">`,
   sw_comp:`<img class="prod fill" src="/composite.jpg?v=1" alt="Composite wood-grain siding">`,
-  sw_steel:`<img class="prod fill" src="${rz('694336892c8abe2287d92a7c.jpg',320)}" alt="Quality Edge Vesta steel siding in Natural Oak woodgrain">`
+  sw_steel:`<img class="prod fill" src="${rz('694336892c8abe2287d92a7c.jpg',320)}" alt="Quality Edge Vesta steel siding in Natural Oak woodgrain">`,
+  sw_guard:`<img class="prod fill" src="${rz('69406c76ab2594622b20392e.jpg',320)}" alt="Hydro Flo gutter guards">`,
+  sw_gutter:`<img class="prod fill" src="${rz('69447ac9e7887054fd40e7d5.png',320)}" alt="Seamless aluminum gutters">`
 };
 function shingleRows(a,b){let s='';for(let r=0;r<5;r++){const y=8+r*11;for(let c=0;c<6;c++){const x=(r%2?5:0)+c*11;s+=`<rect x="${x}" y="${y}" width="10" height="9" fill="${c%2?a:b}"/>`;}}return s;}
 function slateRows(){let s='';for(let r=0;r<5;r++){const y=6+r*11;for(let c=0;c<5;c++){const x=(r%2?6:0)+c*12;s+=`<rect x="${x}" y="${y}" width="11" height="10" rx="1.5" fill="${(r+c)%2?'#5a6570':'#414b55'}"/>`;}}return s;}
 function lapRows(c){let s='';for(let r=0;r<6;r++){s+=`<rect x="0" y="${r*10}" width="60" height="8" fill="${c}"/>`;}return s;}
 
 /* ============ PRICING CONFIG ============ */
+/* Service order is deliberate (James, 2026-08-04): Roof, Siding, Gutters, Storm.
+   Roof repair is NOT a priced service any more — repairs can't be priced from
+   satellite data and a bad number sets a bad expectation. Repair intent is
+   captured via the "hidden" roof-repair service (free-inspection only),
+   reachable from a text link under the intro cards. */
 const SERVICES = {
   "roof-replacement": {
-    label:"Roof Replacement", tag:"Full roof, priced per square foot",
+    label:"Roof Replacement", tag:"See all 3 options priced — Good, Better, Best",
     steps:[
       {key:"address", type:"text", q:"What's the property address?",
        hint:"We'll measure your roof from satellite automatically. Rural addresses may not be covered — you can set the size on the next screen.",
@@ -185,13 +209,6 @@ const SERVICES = {
       {key:"size", type:"slider", q:"About how big is your roof?",
        hint:"Auto-filled from your address when available — adjust if needed.",
        min:900,max:7000,step:50,def:1800,unit:"sq ft"},
-      {key:"material", type:"choice", q:"What roofing material would you like?",
-       opts:[
-         {t:"Class 3 Shingles", sm:"TAMKO Titan XT — premium architectural, the QC standard", img:"sw_class3", mult:1.00},
-         {t:"Class 4 Shingles", sm:"Stormfighter Flex — Class 4 impact-rated, may lower insurance", img:"sw_class4", mult:1.08, tag:"Popular"},
-         {t:"Synthetic (Slate/Shake)", sm:"Brava — premium synthetic slate/shake, 50-yr", img:"sw_synth", mult:1.75, base:[19.00,28.00]},
-         {t:"Not sure — help me choose", sm:"We'll help you pick on your free estimate", img:"sw_help", mult:1.00}
-       ]},
       {key:"steep", type:"choice", q:"How steep is your roof?",
        opts:[
          {t:"Low / walkable", sm:"Easy pitch", mult:1.00},
@@ -201,34 +218,19 @@ const SERVICES = {
       {key:"timing", type:"choice", q:"When are you looking to get this done?",
        opts:[{t:"As soon as possible",sm:""},{t:"1–3 months",sm:""},{t:"Just researching",sm:""}]}
     ],
-    compute(a){ const size=a.size||1800, mb=a.material.base, base=mb?mb:[5.50,7.50], m=mb?1:a.material.mult, s=a.steep.mult;
-      return [size*base[0]*m*s, size*base[1]*m*s]; }
-  },
-  "roof-repair": {
-    label:"Roof Repair", tag:"Leaks, missing shingles, storm patches",
-    steps:[
-      {key:"problem", type:"choice", q:"What's going on with your roof?",
-       opts:[
-         {t:"Minor leak in one spot", sm:"", base:[200,600]},
-         {t:"Missing / damaged shingles", sm:"", base:[300,900]},
-         {t:"Storm damage / multiple areas", sm:"", base:[1200,3800]},
-         {t:"Not sure — need it looked at", sm:"", base:[200,3800]}
-       ]},
-      {key:"material", type:"choice", q:"What roofing material do you have?",
-       opts:[
-         {t:"Class 3 Shingles", sm:"TAMKO Titan XT architectural", img:"sw_class3", mult:1.00},
-         {t:"Class 4 Shingles", sm:"Stormfighter Flex — impact-resistant", img:"sw_class4", mult:1.10},
-         {t:"Synthetic (Slate/Shake)", sm:"Brava synthetic", img:"sw_synth", mult:1.45},
-         {t:"Not sure", sm:"", img:"sw_help", mult:1.10}
-       ]},
-      {key:"access", type:"choice", q:"How easy is the roof to get to?",
-       opts:[
-         {t:"Easy / single story", sm:"", mult:1.00},
-         {t:"Moderate", sm:"", mult:1.15},
-         {t:"Difficult / steep / tall", sm:"", mult:1.30}
-       ]}
-    ],
-    compute(a){ const b=a.problem.base, m=a.material.mult*a.access.mult; return [b[0]*m, b[1]*m]; }
+    /* Good/Better/Best: no material question — the estimate screen shows ALL
+       three tiers priced side by side, with photos. Class 4 = Class 3 × 1.08
+       (validated against James's real spread on the Sciota deal, 2026-08-04).
+       Steep multipliers 1.00/1.15/1.30 validated by the $219k Bettendorf close. */
+    tiers(a){
+      const size=a.size||1800, sp=a.steep.mult;
+      const r=(base,m)=>[size*base[0]*m*sp, size*base[1]*m*sp];
+      return [
+        {lbl:"GOOD", name:"Class 3 Shingles", prod:"TAMKO Titan XT", sm:"Premium architectural shingle — the Quad Cities standard", img:"sw_class3", r:r([5.50,7.50],1.00)},
+        {lbl:"BETTER", name:"Class 4 Impact-Rated", prod:"TAMKO Stormfighter Flex", sm:"Hail-rated — may qualify for an insurance premium discount", img:"sw_class4", badge:"Most Popular", r:r([5.50,7.50],1.08)},
+        {lbl:"BEST", name:"Synthetic Slate & Shake", prod:"Brava — 50-year composite", sm:"The forever roof — authentic slate/shake look, extreme durability", img:"sw_synth", r:r([19.00,28.00],1.00)}
+      ];
+    }
   },
   "siding": {
     label:"Siding Replacement", tag:"Vinyl, composite or steel",
@@ -257,8 +259,62 @@ const SERVICES = {
     ],
     compute(a){ const b=a.size.base, m=a.material.mult*a.tearoff.mult; return [b[0]*m, b[1]*m]; }
   },
+  "gutters": {
+    label:"Gutters & Downspouts", tag:"Seamless aluminum · Hydro Flo guards",
+    steps:[
+      {key:"address", type:"text", q:"What's the property address?",
+       hint:"We'll measure your home from satellite and estimate gutter footage and downspouts automatically. You can adjust on the next screen.",
+       placeholder:"123 Main St, Moline, IL"},
+      {key:"size", type:"slider", q:"About how many feet of gutter?",
+       hint:"Auto-filled from your address when available — most Quad Cities homes run 100–200 linear feet.",
+       min:60,max:400,step:10,def:160,unit:"linear ft"},
+      {key:"gsize", type:"choice", q:"Which gutter size?",
+       opts:[
+         {t:'5" Seamless Aluminum', sm:'K-style — the standard for most homes · $9/ft installed', img:"sw_gutter", rate:9.00},
+         {t:'6" Seamless Aluminum', sm:'Oversized — big roofs, steep pitches, heavy runoff · $12/ft installed', rate:12.00, tag:"Best for large roofs"},
+         {t:"Not sure — help me choose", sm:"We'll recommend the right size at your free on-site estimate", img:"sw_help", rate:9.00}
+       ]},
+      {key:"guards", type:"choice", q:"Add Hydro Flo gutter guards?",
+       opts:[
+         {t:"Yes — never clean gutters again", sm:"Premium Hydro Flo guards keep leaves and debris out for good", img:"sw_guard", guard:12.00, tag:"Popular"},
+         {t:"No guards", sm:"Open gutters", guard:0}
+       ]},
+      {key:"timing", type:"choice", q:"When are you looking to get this done?",
+       opts:[{t:"As soon as possible",sm:""},{t:"1–3 months",sm:""},{t:"Just researching",sm:""}]}
+    ],
+    /* $9/lf (5") and $12/lf (6") seamless aluminum installed, $120 per downspout,
+       Hydro Flo guards $12/lf — James's real pricing, 2026-08-04.
+       Downspouts: one per ~35 ft of run, minimum 4 (one per corner on a typical home).
+       Range: low = measured footage at rate; high = +15% footage (satellite eave
+       estimate is a rectangle approximation — final footage confirmed on site). */
+    compute(a){
+      const lf=a.size||160, ds=Math.max(4,Math.ceil(lf/35));
+      const rate=a.gsize.rate, guard=a.guards.guard||0;
+      return [lf*(rate+guard)+ds*120, lf*1.15*(rate+guard)+ds*120];
+    }
+  },
+  "roof-repair": {
+    label:"Roof Repair", tag:"Free inspection — no satellite price games", hidden:true, inspectionOnly:true,
+    leadHeadline:"Book your free repair inspection",
+    leadSub:"Repairs need eyes on the roof — no honest contractor can price one from a satellite. We'll inspect it free, quote the fix on the spot, and catch small problems before they become expensive ones.",
+    doneMsg:"Your free repair inspection request is in. We'll call shortly to lock in a time.",
+    steps:[
+      {key:"problem", type:"choice", q:"What's going on with your roof?",
+       opts:[
+         {t:"Leak / water spot inside", sm:""},
+         {t:"Missing or damaged shingles", sm:""},
+         {t:"Storm damage / multiple areas", sm:"If a storm caused it, insurance may owe you a full roof — we'll check"},
+         {t:"Not sure — need it looked at", sm:""}
+       ]},
+      {key:"timing", type:"choice", q:"How urgent is it?",
+       opts:[{t:"Actively leaking — ASAP",sm:""},{t:"Soon, but not an emergency",sm:""},{t:"Just want it checked",sm:""}]}
+    ]
+  },
   "storm": {
     label:"Storm Damage", tag:"Free inspection + insurance help", inspectionOnly:true,
+    leadHeadline:"Book your free storm inspection",
+    leadSub:"We'll document the damage, help with your insurance claim, and never quote a repair price that could hurt your claim.",
+    doneMsg:"Your free storm inspection request is in. We'll call shortly to lock in a time and walk you through the insurance side.",
     steps:[
       {key:"what", type:"choice", q:"What kind of storm damage are you dealing with?",
        opts:[{t:"Hail",sm:""},{t:"Wind",sm:""},{t:"Fallen tree / debris",sm:""},{t:"Not sure — looks off",sm:""}]},
@@ -304,13 +360,14 @@ function renderIntro(){
       <h1>What can we help you with?</h1>
       <p class="sub">Get a real ballpark price for your Quad Cities home — no waiting on a callback.</p>
       <div class="cards">
-        ${Object.entries(SERVICES).map(([k,s])=>`
+        ${Object.entries(SERVICES).filter(([k,s])=>!s.hidden).map(([k,s])=>`
           <button class="opt" onclick="pickService('${k}')">
             <span class="pic"><img src="${SERVICE_PHOTO[k]}" alt="" loading="lazy"></span>
             <span>${s.label}<span class="sm">${s.tag}</span></span>
             <span class="chev">${chev()}</span>
           </button>`).join('')}
       </div>
+      <div class="repairlink">Need a roof repair instead? <a onclick="pickService('roof-repair')">Book a free repair inspection →</a></div>
     </div>`;
 }
 window.pickService = k => {
@@ -364,6 +421,10 @@ function measuredBox(){
   /* Transparency: show the roof itself AND the with-waste material figure separately.
      A homeowner holding an EagleView/Hover will match the first number — showing only
      the waste-included figure reads as inflation. */
+  if(state.service==='gutters'){
+    const ds=Math.max(4,Math.ceil(state.measured/35));
+    return `<div class="measured">${checkIcon()}<span>Home measured from satellite: about ${state.measured.toLocaleString()} linear feet of gutter, with roughly ${ds} downspouts. Adjust if needed — we confirm exact footage at your free on-site estimate.</span></div>`;
+  }
   const roof = state.measureMeta && state.measureMeta.roofSqft;
   if(roof && roof !== state.measured){
     return `<div class="measured">${checkIcon()}<span>Roof measured from satellite: about ${roof.toLocaleString()} sq ft. We quote ${state.measured.toLocaleString()} sq ft of material to cover cuts, ridge and waste — adjust if needed.</span></div>`;
@@ -373,7 +434,7 @@ function measuredBox(){
 window.answer = i => { const s=SERVICES[state.service], step=s.steps[state.step]; state.answers[step.key]=step.opts[i]; advance(); };
 window.nextFromField = () => {
   const s=SERVICES[state.service], step=s.steps[state.step];
-  if(step.type==='slider'){ state.answers[step.key]={raw:state.size,t:state.size.toLocaleString()+' sq ft'}; }
+  if(step.type==='slider'){ state.answers[step.key]={raw:state.size,t:state.size.toLocaleString()+' '+(step.unit||'sq ft')}; }
   if(step.type==='text'){ state.answers[step.key]={raw:document.getElementById('txt').value}; }
   advance();
 };
@@ -493,12 +554,18 @@ async function measureRoof(lat,lon){
     const j=await r.json();
 
     const segs=(j&&j.solarPotential&&j.solarPotential.roofSegmentStats)||[];
-    let sqft=0, pitchSum=0;
+    let sqft=0, pitchSum=0, footM2=0;
     for(const s of segs){
       const a=(s&&s.stats&&s.stats.areaMeters2)||0;
+      const p=((s&&s.pitchDegrees!=null)?s.pitchDegrees:22);
       // areaMeters2 already accounts for tilt — convert m2 -> ft2 and nothing else.
       sqft += a * 10.7639;
-      pitchSum += ((s&&s.pitchDegrees!=null)?s.pitchDegrees:22);
+      pitchSum += p;
+      /* Ground-projected footprint for the GUTTER estimate. Multiplying sloped
+         area by cos(pitch) to get the footprint is CORRECT here — this is the
+         inverse projection, NOT the old divide-by-cos bug (see MEASUREMENT-NOTES.md).
+         Do not "fix" this. */
+      footM2 += a * Math.cos(p*Math.PI/180);
     }
     if(!(sqft>0)) return null;
 
@@ -523,6 +590,14 @@ async function measureRoof(lat,lon){
     const corr = (quality === 'HIGH') ? (segs.length >= 10 ? 1.12 : 1.0) : 1.4;
     const roofSqft = Math.round(sqft*corr/50)*50;   // best estimate of the roof itself (no waste)
 
+    /* GUTTER ESTIMATE from the ground footprint. Perimeter of a rectangle with a
+       typical 1.6:1 aspect ratio and area A is ~4.11*sqrt(A); gutters run roughly
+       the eave perimeter on QC homes (hips all around, gables trade eave for rake
+       — the range + on-site visit absorbs the difference). The area correction
+       factor applies at sqrt on a linear measure. Rounded to 10 lf. */
+    const footSqft = footM2 * 10.7639;
+    const eaveLf = footSqft > 0 ? Math.round(4.11*Math.sqrt(footSqft)*Math.sqrt(corr)/10)*10 : null;
+
     // Stash diagnostics so we can validate against Hover reports later.
     state.measureMeta = {
       facets: segs.length,
@@ -530,6 +605,8 @@ async function measureRoof(lat,lon){
       imageryDate: (j.imageryDate && [j.imageryDate.year,j.imageryDate.month,j.imageryDate.day].filter(Boolean).join('-')) || '',
       rawSqft: Math.round(sqft),
       roofSqft,
+      footprintSqft: Math.round(footSqft),
+      eaveLf,
       avgPitchDeg: segs.length ? Math.round(pitchSum/segs.length) : null,
       waste: SOLAR.waste,
       corr
@@ -543,9 +620,11 @@ async function startMeasure(lat,lon){
   state.measuring=true; state.measured=null; refreshMeasbox();
   const sqft=await measureRoof(lat,lon);
   state.measuring=false;
-  if(sqft){ const sl=(SERVICES[state.service]&&SERVICES[state.service].steps||[]).find(s=>s.type==='slider');
-    let v=sqft; if(sl){ v=Math.min(Math.max(sqft,sl.min),sl.max); }
-    state.measured=sqft; state.size=v; }
+  const sl=(SERVICES[state.service]&&SERVICES[state.service].steps||[]).find(s=>s.type==='slider');
+  // Gutters: the slider is LINEAR FEET of gutter, not roof sqft — fill from the eave estimate.
+  const val = (state.service==='gutters') ? (sqft && state.measureMeta ? state.measureMeta.eaveLf : null) : sqft;
+  if(val){ let v=val; if(sl){ v=Math.min(Math.max(val,sl.min),sl.max); }
+    state.measured=val; state.size=v; }
   refreshMeasbox(); refreshSlider();
 }
 function measuringBox(){ return `<div class="note" style="background:#eef7ff;border-color:#bfe0ff;color:#3a6ea5;">${infoIcon()}<span>Measuring your roof from satellite…</span></div>`; }
@@ -566,29 +645,57 @@ function estInput(){
   if(SERVICES[state.service].steps.some(st=>st.type==='slider')) o.size = state.size;
   return o;
 }
+const monthly = mid => Math.round((mid*(0.0999/12))/(1-Math.pow(1+0.0999/12,-120))/5)*5;
 function renderEstimate(){
   const s=SERVICES[state.service];
   const a=estInput();
-  const [lo,hi]=s.compute(a);
-  const mid=(lo+hi)/2;
-  const mo=Math.round((mid*(0.0999/12))/(1-Math.pow(1+0.0999/12,-120))/5)*5;
   const first = state.lead ? state.lead.name.split(' ')[0] : 'there';
-  main.innerHTML = `
-    <div class="step">
-      <div class="eyebrow">Your Instant Estimate</div>
-      <h1>Thanks, ${first}! Here's your ${s.label.toLowerCase()} estimate</h1>
-      <p class="sub">A detailed written estimate is on its way to ${state.lead?state.lead.email:'your email'} — and we'll call to schedule your free on-site estimate to lock in the exact price.</p>
+
+  /* Good/Better/Best: roof replacement shows ALL tiers priced, with photos.
+     Anchoring is deliberate — Brava on top of the stack makes Class 4 the
+     obvious smart buy, and Class 4 at ~8% over Class 3 sells itself. */
+  let priceBlock;
+  if(s.tiers){
+    const cards=s.tiers(a).map(t=>`
+      <div class="tier ${t.badge?'hot':''}">
+        ${t.badge?`<div class="tbadge">★ ${t.badge}</div>`:''}
+        <div class="timg">${ART[t.img]}</div>
+        <div>
+          <div class="tlbl">${t.lbl}</div>
+          <div class="tname">${t.name}</div>
+          <div class="tprod">${t.prod} — ${t.sm}</div>
+          <div class="tprice">${money(t.r[0])} – ${money(t.r[1])}</div>
+          <div class="tmo">or ~$${monthly((t.r[0]+t.r[1])/2).toLocaleString()}/mo with financing*</div>
+        </div>
+      </div>`).join('');
+    priceBlock = `
+      <div class="tiers">${cards}</div>
+      <div class="estcard"><div class="body">
+        ${summaryRows(s)}
+        <p class="disc">*Illustrative only (sample 10-yr term). Actual financing set by your provider. These ranges are ballparks, not formal quotes — final price confirmed after a free on-site estimate.</p>
+      </div></div>`;
+  } else {
+    const [lo,hi]=s.compute(a);
+    priceBlock = `
       <div class="estcard">
         <div class="top">
           <div class="lbl">Estimated Project Range</div>
           <div class="amt">${money(lo)} – ${money(hi)}</div>
-          <div class="fin">or as low as ~$${mo.toLocaleString()}/mo with financing*</div>
+          <div class="fin">or as low as ~$${monthly((lo+hi)/2).toLocaleString()}/mo with financing*</div>
         </div>
         <div class="body">
           ${summaryRows(s)}
+          ${state.service==='gutters'?`<div class="estrow"><span>Downspouts (estimated, included)</span><b>${Math.max(4,Math.ceil((state.size||160)/35))} × $120</b></div>`:''}
           <p class="disc">*Illustrative only (sample 10-yr term). Actual financing set by your provider. This range is a ballpark, not a formal quote — final price confirmed after a free on-site estimate.</p>
         </div>
-      </div>
+      </div>`;
+  }
+  main.innerHTML = `
+    <div class="step">
+      <div class="eyebrow">Your Instant Estimate</div>
+      <h1>${s.tiers?`Thanks, ${first}! Here are your roof options`:`Thanks, ${first}! Here's your ${s.label.toLowerCase()} estimate`}</h1>
+      <p class="sub">${s.tiers?'Three real options, real prices — Good, Better, Best. ':''}A detailed written estimate is on its way to ${state.lead?state.lead.email:'your email'} — and we'll call to schedule your free on-site estimate to lock in the exact price.</p>
+      ${priceBlock}
       ${showcaseBlock()}
       <div class="nav">
         <button class="btn-ghost btn" onclick="location.reload()">Start over</button>
@@ -608,17 +715,19 @@ function showcaseBlock(){
 function summaryRows(s){
   return s.steps.filter(st=>st.type==='choice'||st.type==='slider').map(st=>{
     const ans=state.answers[st.key];
-    let v = st.type==='slider' ? (state.size.toLocaleString()+' sq ft') : (ans?ans.t:'—');
+    let v = st.type==='slider' ? (state.size.toLocaleString()+' '+(st.unit||'sq ft')) : (ans?ans.t:'—');
     return `<div class="estrow"><span>${st.q}</span><b>${v}</b></div>`;
   }).join('');
 }
 
 function renderLead(){
   const s=SERVICES[state.service];
-  const headline = s.inspectionOnly ? "Book your free storm inspection" : "Your instant estimate is ready";
+  const headline = s.inspectionOnly ? (s.leadHeadline||"Book your free inspection") : (s.tiers ? "Your 3 roof options are ready" : "Your instant estimate is ready");
   const subtxt = s.inspectionOnly
-    ? "We'll document the damage, help with your insurance claim, and never quote a repair price that could hurt your claim."
-    : "Enter your details to see your price. We'll also email a detailed written estimate and call to schedule your free, no-pressure on-site estimate.";
+    ? (s.leadSub||"We'll take a look, free, and walk you through your options.")
+    : (s.tiers
+       ? "Enter your details to see all three options priced — Good, Better, Best — with photos. We'll also email a detailed written estimate and call to schedule your free, no-pressure on-site estimate."
+       : "Enter your details to see your price. We'll also email a detailed written estimate and call to schedule your free, no-pressure on-site estimate.");
   main.innerHTML = `
     <div class="step lead">
       <div class="eyebrow">${s.inspectionOnly?'Free Inspection':'One last step'}</div>
@@ -642,9 +751,11 @@ window.submitLead = async () => {
   if(!name||!phone||!email||!zip){ alert('Please fill in name, phone, email, and ZIP.'); return; }
   const s=SERVICES[state.service];
   let est='Free inspection requested';
-  if(!s.inspectionOnly){ const a=estInput(); const [lo,hi]=s.compute(a); est=money(lo)+' – '+money(hi); }
-  const details = s.steps.filter(st=>st.type==='choice'||st.type==='slider')
-    .map(st=> st.q+': '+(st.type==='slider'? state.size.toLocaleString()+' sq ft' : (state.answers[st.key]?.t||'—'))).join(' | ');
+  if(s.tiers){ const a=estInput(); est=s.tiers(a).map(t=>t.lbl+' '+money(t.r[0])+'–'+money(t.r[1])).join(' | '); }
+  else if(!s.inspectionOnly){ const a=estInput(); const [lo,hi]=s.compute(a); est=money(lo)+' – '+money(hi); }
+  let details = s.steps.filter(st=>st.type==='choice'||st.type==='slider')
+    .map(st=> st.q+': '+(st.type==='slider'? state.size.toLocaleString()+' '+(st.unit||'sq ft') : (state.answers[st.key]?.t||'—'))).join(' | ');
+  if(state.service==='gutters'){ details += ' | Downspouts (est, included): '+Math.max(4,Math.ceil((state.size||160)/35))+' × $120'; }
   const payload = { source:'Instant Estimator (roofqc.com)', full_name:name, phone, email, postal_code:zip, sms_transactional_consent:(document.getElementById('f_sms_t')||{}).checked===true, sms_promotional_consent:(document.getElementById('f_sms_p')||{}).checked===true,
     service:s.label, estimate_range:est, details, address: state.answers.address?.raw || '',
     // measurement diagnostics — lets us compare app vs Hover and tune the waste factor on real data
@@ -654,7 +765,10 @@ window.submitLead = async () => {
     measure_imagery_date: state.measureMeta?.imageryDate || '',
     measure_raw_sqft: state.measureMeta?.rawSqft ?? null,
     measure_avg_pitch_deg: state.measureMeta?.avgPitchDeg ?? null,
-    measure_correction: state.measureMeta?.corr ?? null };
+    measure_correction: state.measureMeta?.corr ?? null,
+    // gutter diagnostics — compare satellite eave estimate vs field-measured footage
+    measure_eave_lf: state.measureMeta?.eaveLf ?? null,
+    downspouts_est: state.service==='gutters' ? Math.max(4,Math.ceil((state.size||160)/35)) : null };
   state.lead={name,phone,email,zip};
   const btn=document.querySelector('.lead .btn-primary'); if(btn){ btn.textContent='Sending…'; btn.disabled=true; }
   if(CONFIG.X360_LEAD_WEBHOOK){
@@ -691,7 +805,7 @@ function renderDone(){
       <div class="check"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
       <h1>You're all set, ${state.lead.name.split(' ')[0]}!</h1>
       <p class="sub">${s.inspectionOnly
-        ? "Your free storm inspection request is in. We'll call shortly to lock in a time and walk you through the insurance side."
+        ? (s.doneMsg||"Your free inspection request is in. We'll call shortly to lock in a time.")
         : "Your estimate is on its way to "+state.lead.email+". We'll reach out to schedule your free on-site estimate."}</p>
       <div class="estcard" style="text-align:left;margin-top:6px;"><div class="body">
         <div class="estrow"><span>Service</span><b>${s.label}</b></div>
