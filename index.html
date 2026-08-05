@@ -750,9 +750,10 @@ window.submitLead = async () => {
   const name=v('f_name'), phone=v('f_phone'), email=v('f_email'), zip=v('f_zip');
   if(!name||!phone||!email||!zip){ alert('Please fill in name, phone, email, and ZIP.'); return; }
   const s=SERVICES[state.service];
-  let est='Free inspection requested';
-  if(s.tiers){ const a=estInput(); est=s.tiers(a).map(t=>t.lbl+' '+money(t.r[0])+'–'+money(t.r[1])).join(' | '); }
-  else if(!s.inspectionOnly){ const a=estInput(); const [lo,hi]=s.compute(a); est=money(lo)+' – '+money(hi); }
+  let est='Free inspection requested', estVal=null;
+  if(s.tiers){ const a=estInput(); const trs=s.tiers(a); est=trs.map(t=>t.lbl+' '+money(t.r[0])+'–'+money(t.r[1])).join(' | ');
+    estVal=Math.round((trs[1].r[0]+trs[1].r[1])/2); } // pipeline value = Class 4 midpoint (the pushed option)
+  else if(!s.inspectionOnly){ const a=estInput(); const [lo,hi]=s.compute(a); est=money(lo)+' – '+money(hi); estVal=Math.round((lo+hi)/2); }
   let details = s.steps.filter(st=>st.type==='choice'||st.type==='slider')
     .map(st=> st.q+': '+(st.type==='slider'? state.size.toLocaleString()+' '+(st.unit||'sq ft') : (state.answers[st.key]?.t||'—'))).join(' | ');
   if(state.service==='gutters'){ details += ' | Downspouts (est, included): '+Math.max(4,Math.ceil((state.size||160)/35))+' × $120'; }
@@ -768,13 +769,19 @@ window.submitLead = async () => {
     measure_correction: state.measureMeta?.corr ?? null,
     // gutter diagnostics — compare satellite eave estimate vs field-measured footage
     measure_eave_lf: state.measureMeta?.eaveLf ?? null,
-    downspouts_est: state.service==='gutters' ? Math.max(4,Math.ceil((state.size||160)/35)) : null };
+    downspouts_est: state.service==='gutters' ? Math.max(4,Math.ceil((state.size||160)/35)) : null,
+    estimate_value: estVal };
   state.lead={name,phone,email,zip};
   const btn=document.querySelector('.lead .btn-primary'); if(btn){ btn.textContent='Sending…'; btn.disabled=true; }
+  // Fan-out: X360 webhook (direct, unchanged) + same-origin relay -> Twin Bridge
+  // Central + AccuLynx (secrets stay server-side). Fired in parallel; neither
+  // failing blocks the customer from seeing their estimate.
+  const posts=[];
   if(CONFIG.X360_LEAD_WEBHOOK){
-    try{ await fetch(CONFIG.X360_LEAD_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
-    catch(e){}
+    posts.push(fetch(CONFIG.X360_LEAD_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{}));
   }
+  posts.push(fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{}));
+  try{ await Promise.allSettled(posts); }catch(e){}
   // Meta Pixel Lead - fires once per completed lead
   try{
     if(typeof fbq==='function' && !state._fbconv){
