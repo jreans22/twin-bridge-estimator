@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoofQC Measure — Instant Roof Measurement Reports</title>
+<meta name="description" content="Instant, order-grade roof measurement reports for the Quad Cities — area, pitch, edge lengths, and roof line diagram in seconds.">
+<style>
+ :root{ --red:#e31e24; --red-dark:#b8171c; --ink:#1a1919; --line:#e7e7e7; --muted:#6b6b6b; }
+ *{box-sizing:border-box;margin:0;padding:0}
+ html,body{height:100%}
+ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+ color:var(--ink);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+ header{background:var(--ink);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;flex:none;}
+ .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;}
+ .logo .mark{width:36px;height:36px;border-radius:8px;background:var(--red);display:flex;align-items:center;
+ justify-content:center;font-weight:800;font-size:17px;color:#fff;letter-spacing:-1px;}
+ .logo .name{font-weight:800;font-size:14.5px;line-height:1.15;}
+ .logo .name span{display:block;font-weight:500;font-size:10.5px;color:#cfcfcf;letter-spacing:.5px;text-transform:uppercase;}
+ nav{margin-left:auto;display:flex;gap:8px;align-items:center;}
+ nav a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:8px 14px;border-radius:9px;
+ border:1px solid rgba(255,255,255,.22);transition:.15s;white-space:nowrap;}
+ nav a:hover{background:rgba(255,255,255,.12);}
+ nav a.cta{background:var(--red);border-color:var(--red);}
+ nav a.cta:hover{background:var(--red-dark);}
+ .frame{flex:1;border:0;width:100%;display:block;background:#f4f5f7;}
+ footer{flex:none;padding:10px 20px;text-align:center;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);}
+ footer a{color:var(--red);text-decoration:none;font-weight:600;}
+ @media(max-width:560px){ .logo .name span{display:none} nav a{padding:7px 10px;font-size:12px} }
+</style>
+</head>
+<body>
+<header>
+ <a class="logo" href="https://estimate.roofqc.com/">
+ <div class="mark">TB</div>
+ <div class="name">RoofQC Measure<span>Twin Bridge Roofing &amp; Construction</span></div>
+ </a>
+ <nav>
+ <a href="https://estimate.roofqc.com/">Instant Estimate</a>
+ <a class="cta" href="tel:5636554902">(563) 655-4902</a>
+ </nav>
+</header>
+<iframe class="frame" src="https://crm.roofqc.com/api/measure/solar-report" title="RoofQC Measure — roof measurement reports"></iframe>
+<footer>Quad Cities' Trusted Roofing &amp; Exterior Experts &middot; <a href="https://www.roofqc.com">roofqc.com</a> &middot; Licensed &amp; Insured</footer>
+</body>
+</html>
