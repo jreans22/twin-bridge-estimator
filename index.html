@@ -544,7 +544,38 @@ function solarBump(){
      HIGH   = low-altitude aerial, 0.10 m/pixel  (best)
      MEDIUM = high-altitude aerial, 0.25 m/pixel
      LOW    = satellite,            0.25 m/pixel */
+/* v2 (2026-08-08): measurement now comes from RoofQC Measure - Twin Bridge
+   Central's tri-engine (Google Solar 2016 -> USGS LiDAR 2019 -> Google 3D
+   mesh 2024, TB-CAL calibrated) via the same-origin /api/measure proxy.
+   Rural coverage + risk flag included. Falls back to the legacy client-side
+   Solar path if the proxy is down or unconfigured. */
 async function measureRoof(lat,lon){
+  try{
+    const r = await fetch('/api/measure?lat='+lat+'&lon='+lon, { signal: AbortSignal.timeout(50000) });
+    if(r.ok){
+      const j = await r.json();
+      if(j && j.ok && j.totalSqft >= 800 && j.maskRisk !== 'high'){
+        state.measureMeta = {
+          facets: j.facets, quality: 'TBC:'+j.source, imageryDate: String(j.imageryDate||''),
+          rawSqft: Math.round(j.totalSqft), roofSqft: Math.round(j.totalSqft),
+          footprintSqft: Math.round(j.footprintSqft||0),
+          eaveLf: j.eaveFt ? Math.round(j.eaveFt) : null,
+          avgPitchDeg: j.pitch!=null ? Math.round(Math.atan(j.pitch/12)*180/Math.PI) : null,
+          waste: SOLAR.waste, corr: 1, engine: j.source, maskRisk: j.maskRisk
+        };
+        return Math.round(j.totalSqft*SOLAR.waste/50)*50;
+      }
+      if(j && j.ok && j.maskRisk === 'high'){
+        /* Flagged measurement (trees/attached structures) - do NOT price off it.
+           Manual slider keeps the lead flowing with an honest number. */
+        state.measureMeta = { rejected:'risky', engine:j.source, rawSqft: Math.round(j.totalSqft||0) };
+        return null;
+      }
+    }
+  }catch(e){}
+  return measureRoofLegacy(lat,lon);
+}
+async function measureRoofLegacy(lat,lon){
   try{
     if(!SOLAR.key || lat==null || lon==null) return null;
     if(!solarCapOk()) return null;
