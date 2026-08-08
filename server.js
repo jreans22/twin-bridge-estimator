@@ -42,9 +42,48 @@ function relayLead(req, res) {
   });
 }
 
+/* Measurement proxy: the browser asks this server, this server asks RoofQC
+   Measure (Twin Bridge Central's tri-engine endpoint) with the service key
+   from Railway env - the key never reaches the page. */
+async function proxyMeasure(req, res) {
+  const q = new URL(req.url, 'http://x').searchParams;
+  const lat = q.get('lat'), lon = q.get('lon');
+  const base = process.env.TBC_MEASURE_URL;
+  const key = process.env.MEASURE_SERVICE_KEY;
+  if (!base || !key || !lat || !lon) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end('{"ok":false,"why":"unconfigured"}');
+    return;
+  }
+  try {
+    const r = await fetch(base + '?lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lon) + '&format=json&k=' + encodeURIComponent(key), { signal: AbortSignal.timeout(45000) });
+    if (!r.ok) throw new Error('upstream ' + r.status);
+    const j = await r.json();
+    const pitchTop = j.areasPerPitch && j.areasPerPitch[0] ? j.areasPerPitch[0].pitch : null;
+    const out = {
+      ok: true,
+      totalSqft: j.totalAreaSqft || 0,
+      footprintSqft: j.footprintSqft || 0,
+      eaveFt: (j.segmentsFt && j.segmentsFt.eave) || 0,
+      perimeterFt: j.perimeterFt || 0,
+      pitch: pitchTop,
+      facets: j.facetCount || 0,
+      source: j.source || '',
+      maskRisk: j.maskRisk || '',
+      imageryDate: j.imageryYear || ''
+    };
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(out));
+  } catch (e) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end('{"ok":false,"why":"upstream"}');
+  }
+}
+
 http.createServer((req, res) => {
   let p = decodeURIComponent((req.url || '/').split('?')[0]);
   if (req.method === 'POST' && p === '/api/lead') { relayLead(req, res); return; }
+  if (req.method === 'GET' && p === '/api/measure') { proxyMeasure(req, res); return; }
   if (p === '/' || p === '') p = '/index.html';
   const safe = path.normalize(p).replace(/^(\.\.[\/\\])+/, '');
   const file = path.join(root, safe);
