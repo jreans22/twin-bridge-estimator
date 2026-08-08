@@ -676,7 +676,8 @@ function estInput(){
   if(SERVICES[state.service].steps.some(st=>st.type==='slider')) o.size = state.size;
   return o;
 }
-const monthly = mid => Math.round((mid*(0.0999/12))/(1-Math.pow(1+0.0999/12,-120))/5)*5;
+const FIN = { apr: 0.119, months: 144, url: 'https://www.roofqc.com/services/financing' }; // Foundation Finance Tier 1 standard plan (free dealer fee)
+const monthly = amt => { const r = FIN.apr/12; return Math.ceil((amt*r)/(1-Math.pow(1+r,-FIN.months))); };
 function renderEstimate(){
   const s=SERVICES[state.service];
   const a=estInput();
@@ -696,14 +697,14 @@ function renderEstimate(){
           <div class="tname">${t.name}</div>
           <div class="tprod">${t.prod} — ${t.sm}</div>
           <div class="tprice">${money(t.r[0])} – ${money(t.r[1])}</div>
-          <div class="tmo">or ~$${monthly((t.r[0]+t.r[1])/2).toLocaleString()}/mo with financing*</div>
+          <div class="tmo">as low as <b>$${monthly(t.r[0]).toLocaleString()}/mo</b>* &middot; <a href="${FIN.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Apply for financing &rarr;</a></div>
         </div>
       </div>`).join('');
     priceBlock = `
       <div class="tiers">${cards}</div>
       <div class="estcard"><div class="body">
         ${summaryRows(s)}
-        <p class="disc">*Illustrative only (sample 10-yr term). Actual financing set by your provider. These ranges are ballparks, not formal quotes — final price confirmed after a free on-site estimate.</p>
+        <p class="disc">*"As low as" example payment: 144-month term, 11.9% APR, with approved credit through Foundation Finance Company. Your rate and term depend on credit approval. These ranges are ballparks, not formal quotes — final price confirmed after a free on-site estimate.</p>
       </div></div>`;
   } else {
     const [lo,hi]=s.compute(a);
@@ -712,12 +713,12 @@ function renderEstimate(){
         <div class="top">
           <div class="lbl">Estimated Project Range</div>
           <div class="amt">${money(lo)} – ${money(hi)}</div>
-          <div class="fin">or as low as ~$${monthly((lo+hi)/2).toLocaleString()}/mo with financing*</div>
+          <div class="fin">as low as $${monthly(lo).toLocaleString()}/mo* &middot; <a href="${FIN.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Apply for financing &rarr;</a></div>
         </div>
         <div class="body">
           ${summaryRows(s)}
           ${state.service==='gutters'?`<div class="estrow"><span>Downspouts (estimated, included)</span><b>${Math.max(4,Math.ceil((state.size||160)/35))} × $120</b></div>`:''}
-          <p class="disc">*Illustrative only (sample 10-yr term). Actual financing set by your provider. This range is a ballpark, not a formal quote — final price confirmed after a free on-site estimate.</p>
+          <p class="disc">*"As low as" example payment: 144-month term, 11.9% APR, with approved credit through Foundation Finance Company. Your rate and term depend on credit approval. This range is a ballpark, not a formal quote — final price confirmed after a free on-site estimate.</p>
         </div>
       </div>`;
   }
@@ -782,14 +783,17 @@ window.submitLead = async () => {
   if(!name||!phone||!email||!zip){ alert('Please fill in name, phone, email, and ZIP.'); return; }
   const s=SERVICES[state.service];
   let est='Free inspection requested', estVal=null;
+  let fin = {};
   if(s.tiers){ const a=estInput(); const trs=s.tiers(a); est=trs.map(t=>t.lbl+' '+money(t.r[0])+'–'+money(t.r[1])).join(' | ');
-    estVal=Math.round((trs[1].r[0]+trs[1].r[1])/2); } // pipeline value = Class 4 midpoint (the pushed option)
+    estVal=Math.round((trs[1].r[0]+trs[1].r[1])/2); // pipeline value = Class 4 midpoint (the pushed option)
+    fin = { estimate_good: money(trs[0].r[0])+' – '+money(trs[0].r[1]), estimate_better: money(trs[1].r[0])+' – '+money(trs[1].r[1]), estimate_best: money(trs[2].r[0])+' – '+money(trs[2].r[1]),
+      estimate_good_monthly: '$'+monthly(trs[0].r[0]).toLocaleString()+'/mo', estimate_better_monthly: '$'+monthly(trs[1].r[0]).toLocaleString()+'/mo', estimate_best_monthly: '$'+monthly(trs[2].r[0]).toLocaleString()+'/mo' }; }
   else if(!s.inspectionOnly){ const a=estInput(); const [lo,hi]=s.compute(a); est=money(lo)+' – '+money(hi); estVal=Math.round((lo+hi)/2); }
   let details = s.steps.filter(st=>st.type==='choice'||st.type==='slider')
     .map(st=> st.q+': '+(st.type==='slider'? state.size.toLocaleString()+' '+(st.unit||'sq ft') : (state.answers[st.key]?.t||'—'))).join(' | ');
   if(state.service==='gutters'){ details += ' | Downspouts (est, included): '+Math.max(4,Math.ceil((state.size||160)/35))+' × $120'; }
   const payload = { source:'Instant Estimator (roofqc.com)', full_name:name, phone, email, postal_code:zip, sms_transactional_consent:(document.getElementById('f_sms_t')||{}).checked===true, sms_promotional_consent:(document.getElementById('f_sms_p')||{}).checked===true,
-    service:s.label, estimate_range:est, details, address: state.answers.address?.raw || '',
+    service:s.label, estimate_range:est, ...fin, details, address: state.answers.address?.raw || '',
     // measurement diagnostics — lets us compare app vs Hover and tune the waste factor on real data
     measured_sqft: state.measured || null,
     measure_facets: state.measureMeta?.facets ?? null,
