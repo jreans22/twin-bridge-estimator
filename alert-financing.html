@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FINANCING APPLICATION</title></head>
+<body style="margin:0;padding:0;background-color:#f1f3f6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f3f6;">
+<tr><td align="center" style="padding:14px 10px 24px;">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="width:560px;max-width:100%;">
+
+<!-- banner -->
+<tr><td align="center" style="background-color:#1a7f37;border-radius:10px 10px 0 0;padding:18px 16px;">
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:34px;font-weight:bold;color:#ffffff;">&#128176; FINANCING APPLICATION &#128176;</div>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#d3f5de;padding-top:6px;letter-spacing:1px;">THIS BUYER IS READY &bull; CALL NOW!!</div>
+</td></tr>
+
+<!-- name + amount + call button -->
+<tr><td align="center" style="background-color:#ffffff;padding:24px 24px 8px;">
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:bold;color:#1a1919;">{{contact.first_name}} {{contact.last_name}}</div>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:bold;color:#1a7f37;padding-top:6px;">wants to finance ${{contact.desired_loan_amount}}</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td align="center" style="background-color:#e31e24;border-radius:8px;">
+<a href="tel:{{contact.phone}}" style="display:inline-block;padding:16px 34px;font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:bold;color:#ffffff;text-decoration:none;">&#128222; CALL {{contact.phone}}</a>
+</td></tr></table>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#888888;padding-top:8px;">Tap on mobile to dial instantly</div>
+</td></tr>
+
+<!-- application details -->
+<tr><td style="background-color:#ffffff;padding:16px 28px 8px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#1a1919;">
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">DESIRED LOAN AMOUNT</b><br><span style="font-size:17px;font-weight:bold;">${{contact.desired_loan_amount}}</span></td></tr>
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">ESTIMATED CREDIT SCORE</b><br>{{contact.estimated_credit_score}}</td></tr>
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">PREFERRED LOAN TYPE</b><br>{{contact.loan_type_preferred}}</td></tr>
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">PREFERRED CONTACT METHOD</b><br>{{contact.preferred_contact_method}}</td></tr>
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">EMAIL</b><br><a href="mailto:{{contact.email}}" style="color:#e31e24;text-decoration:none;">{{contact.email}}</a></td></tr>
+<tr><td style="padding:8px 0;"><b style="color:#6b7280;">ADDRESS</b><br>{{contact.address1}} {{contact.city}}, {{contact.state}} {{contact.postal_code}}</td></tr>
+</table>
+</td></tr>
+
+<!-- next step -->
+<tr><td style="background-color:#ffffff;padding:8px 28px 20px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#7c5c2b;"><b>Next step:</b> credit 680+ &rarr; standard 11.9% plan (free dealer fee). 640&ndash;679 &rarr; still Tier 1/2 pricing. 550&ndash;639 &rarr; Tier 3/4 &mdash; watch dealer fees. Get them the Foundation Finance application same day.</td></tr></table>
+</td></tr>
+
+<!-- footer -->
+<tr><td align="center" style="background-color:#1a1919;border-radius:0 0 10px 10px;padding:14px 20px;">
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#ffffff;">&#128176; A financing lead is a BUYING lead. Call within 5 minutes. &#128176;</div>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

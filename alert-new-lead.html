@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NEW LEAD</title></head>
+<body style="margin:0;padding:0;background-color:#f1f3f6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f3f6;">
+<tr><td align="center" style="padding:14px 10px 24px;">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="width:560px;max-width:100%;">
+
+<!-- CALL NOW banner -->
+<tr><td align="center" style="background-color:#e31e24;border-radius:10px 10px 0 0;padding:18px 16px;">
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:30px;line-height:36px;font-weight:bold;color:#ffffff;">&#128276;&#128276; NEW LEAD &#8212; CALL NOW!! &#128276;&#128276;</div>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#ffd8d9;padding-top:6px;letter-spacing:1px;">INSTANT ESTIMATOR &bull; SPEED TO LEAD WINS</div>
+</td></tr>
+
+<!-- name + call button -->
+<tr><td align="center" style="background-color:#ffffff;padding:24px 24px 8px;">
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:bold;color:#1a1919;">{{inboundWebhookRequest.full_name}}</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td align="center" style="background-color:#1a7f37;border-radius:8px;">
+<a href="tel:{{inboundWebhookRequest.phone}}" style="display:inline-block;padding:16px 34px;font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:bold;color:#ffffff;text-decoration:none;">&#128222; CALL {{inboundWebhookRequest.phone}}</a>
+</td></tr></table>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#888888;padding-top:8px;">Tap on mobile to dial instantly</div>
+</td></tr>
+
+<!-- details -->
+<tr><td style="background-color:#ffffff;padding:16px 28px 8px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#1a1919;">
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">SERVICE</b><br><span style="font-size:17px;font-weight:bold;">{{inboundWebhookRequest.service}}</span></td></tr>
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">ESTIMATE SHOWN</b><br>{{inboundWebhookRequest.estimate_range}}</td></tr>
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">PROPERTY</b><br>{{inboundWebhookRequest.address}}</td></tr>
+<tr><td style="padding:8px 0;border-bottom:1px solid #eef0f3;"><b style="color:#6b7280;">EMAIL</b><br><a href="mailto:{{inboundWebhookRequest.email}}" style="color:#e31e24;text-decoration:none;">{{inboundWebhookRequest.email}}</a></td></tr>
+<tr><td style="padding:8px 0;"><b style="color:#6b7280;">DETAILS</b><br>{{inboundWebhookRequest.details}}</td></tr>
+</table>
+</td></tr>
+
+<!-- footer -->
+<tr><td align="center" style="background-color:#1a1919;border-radius:0 0 10px 10px;padding:14px 20px;">
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#ffffff;">&#9889; Leads called within 5 minutes close 8x more often. GO! &#9889;</div>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
