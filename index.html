@@ -224,7 +224,11 @@ const SERVICES = {
        Steep multipliers 1.00/1.15/1.30 validated by the $219k Bettendorf close. */
     tiers(a){
       const size=a.size||1800, sp=a.steep.mult;
-      const r=(base,m)=>[size*base[0]*m*sp, size*base[1]*m*sp];
+      /* Flagged satellite reads tend UNDER the true roof (trees hide facets) -
+         widen the TOP of every tier 15% so the on-site number lands inside the
+         shown range. Applies only when the measurement carried a risk flag. */
+      const topM=(typeof state!=='undefined'&&state.measureMeta&&state.measureMeta.flagged)?1.15:1.0;
+      const r=(base,m)=>[size*base[0]*m*sp, size*base[1]*m*sp*topM];
       return [
         {lbl:"GOOD", name:"Class 3 Shingles", prod:"TAMKO Titan XT", sm:"Premium architectural shingle — the Quad Cities standard", img:"sw_class3", r:r([5.50,7.50],1.00)},
         {lbl:"BETTER", name:"Class 4 Impact-Rated", prod:"TAMKO Stormfighter Flex", sm:"Hail-rated — may qualify for an insurance premium discount", img:"sw_class4", badge:"Most Popular", r:r([5.50,7.50],1.08)},
@@ -425,6 +429,9 @@ function measuredBox(){
     const ds=Math.max(4,Math.ceil(state.measured/35));
     return `<div class="measured">${checkIcon()}<span>Home measured from satellite: about ${state.measured.toLocaleString()} linear feet of gutter, with roughly ${ds} downspouts. Adjust if needed — we confirm exact footage at your free on-site estimate.</span></div>`;
   }
+  if(state.measureMeta && state.measureMeta.flagged){
+    return `<div class="measured">${checkIcon()}<span>Roof measured from satellite: about ${state.measured.toLocaleString()} sq ft of material. Trees partially block our view of this roof, so the true size may run a bit larger — we confirm the exact number at your free on-site estimate.</span></div>`;
+  }
   const roof = state.measureMeta && state.measureMeta.roofSqft;
   if(roof && roof !== state.measured){
     return `<div class="measured">${checkIcon()}<span>Roof measured from satellite: about ${roof.toLocaleString()} sq ft. We quote ${state.measured.toLocaleString()} sq ft of material to cover cuts, ridge and waste — adjust if needed.</span></div>`;
@@ -566,9 +573,30 @@ async function measureRoof(lat,lon){
         return Math.round(j.totalSqft*SOLAR.waste/50)*50;
       }
       if(j && j.ok && j.maskRisk === 'high'){
-        /* Flagged measurement (trees/attached structures) - do NOT price off it.
-           Manual slider keeps the lead flowing with an honest number. */
-        state.measureMeta = { rejected:'risky', engine:j.source, rawSqft: Math.round(j.totalSqft||0) };
+        if(j.totalSqft >= 800){
+          /* Flagged measurement (trees / attached structures) - USE IT AS A FLOOR.
+             v3 (2026-09-08, 810 Canoe Ct case): the old behavior discarded flagged
+             reads and priced off the homeowner's slider guess. Truth-library
+             calibration says flagged reads tend UNDER the true roof, while
+             homeowner guesses run ~30% low (Canoe Ct: guess 2,000 -> shown ~$13K;
+             flagged satellite 2,620; real estimate $18,354). The flagged number
+             is strictly better than the guess: price off it, tell the homeowner
+             trees limit the view, and widen the top of every tier 15% (see
+             flagged handling in tiers()) so the on-site price lands INSIDE the
+             shown range instead of 40% above it. */
+          state.measureMeta = {
+            facets: j.facets, quality: 'TBC:'+j.source, imageryDate: String(j.imageryDate||''),
+            rawSqft: Math.round(j.totalSqft), roofSqft: Math.round(j.totalSqft),
+            footprintSqft: Math.round(j.footprintSqft||0),
+            eaveLf: j.eaveFt ? Math.round(j.eaveFt) : null,
+            avgPitchDeg: j.pitch!=null ? Math.round(Math.atan(j.pitch/12)*180/Math.PI) : null,
+            waste: SOLAR.waste, corr: 1, engine: j.source, maskRisk: j.maskRisk, flagged: true
+          };
+          return Math.round(j.totalSqft*SOLAR.waste/50)*50;
+        }
+        /* Flagged AND tiny (<800 sqft): the mask grabbed a sliver - useless even
+           as a floor. Manual slider keeps the lead flowing. */
+        state.measureMeta = { rejected:'risky', engine:j.source, rawSqft: Math.round(j.totalSqft||0), maskRisk:'high' };
         return null;
       }
     }
@@ -802,6 +830,8 @@ window.submitLead = async () => {
     measure_raw_sqft: state.measureMeta?.rawSqft ?? null,
     measure_avg_pitch_deg: state.measureMeta?.avgPitchDeg ?? null,
     measure_correction: state.measureMeta?.corr ?? null,
+    measure_mask_risk: state.measureMeta?.maskRisk || (state.measureMeta?.rejected ? 'rejected:'+state.measureMeta.rejected : ''),
+    measure_flagged: state.measureMeta?.flagged === true,
     // gutter diagnostics — compare satellite eave estimate vs field-measured footage
     measure_eave_lf: state.measureMeta?.eaveLf ?? null,
     downspouts_est: state.service==='gutters' ? Math.max(4,Math.ceil((state.size||160)/35)) : null,
