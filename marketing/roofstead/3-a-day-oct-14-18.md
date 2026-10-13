@@ -13,6 +13,11 @@ Link: `roofstead.com/?utm_source=facebook&utm_medium=organic&utm_campaign=oct-la
 
 Images are in `images/` with the `wk2-` prefix.
 
+**X360 status (verified 2026-10-13):** all 15 posts Wed–Sun are scheduled. The Wed noon post
+uses a full `https://www.roofstead.com/...` link. Five posts (Thu noon, Fri 7am, Sat 7am, Sun 7am,
+Sun noon) went out with bare `roofstead.com/...` links because the X360 edit tool rejected the
+update. Facebook auto-links them, but for exact tracking prefix `https://www.` in Social Planner.
+
 | Day | 7am | Noon | 7pm |
 |---|---|---|---|
 | Wed 10/14 | Day 6 measure (already scheduled) | `w1-home-numbers` | Question: office task |
@@ -53,8 +58,8 @@ Images are in `images/` with the `wk2-` prefix.
 
 > Every job. Every stage. One board.
 >
-> Every job on one board by stage, from new lead to paid. Dollars in play at the top, so you know
-> what's coming before the bank tells you.
+> From new lead to paid, every job sits on one board by stage. Dollars in play at the top, so you
+> know what's coming before the bank tells you.
 >
 > Tap a job and you're in the file: photos, estimate, orders, invoice.
 >
