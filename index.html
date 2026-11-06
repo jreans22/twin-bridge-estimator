@@ -203,7 +203,7 @@ const ART = {
   sw_class4:`<img class="prod" src="${rz('6937b613aba1f6581dc32a74.png',320)}" alt="TAMKO Stormfighter Flex">`,
   sw_synth:`<img class="prod" src="${rz('6937b326aba1f65ae6c2c642.webp',320)}" alt="Brava synthetic">`,
   sw_help:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#eef2f6"/><text x="30" y="40" font-size="34" font-weight="800" text-anchor="middle" fill="#e31e24" font-family="Arial">?</text></svg>`,
-  sw_vinyl:`<img class="prod fill" src="${rz('694319eda156350c1870ac90.png',320)}" alt="Royal Estate vinyl siding">`,
+  sw_vinyl:`<img class="prod fill" src="${rz('694319eda156350c1870ac90.png',320)}" alt="CertainTeed Restoration Classic vinyl siding">`,
   sw_comp:`<img class="prod fill" src="/composite.jpg?v=1" alt="Composite wood-grain siding">`,
   sw_steel:`<img class="prod fill" src="${rz('694336892c8abe2287d92a7c.jpg',320)}" alt="Quality Edge Vesta steel siding in Natural Oak woodgrain">`,
   sw_guard:`<img class="prod fill" src="${rz('69406c76ab2594622b20392e.jpg',320)}" alt="Hydro Flo gutter guards">`,
@@ -261,16 +261,16 @@ const SERVICES = {
     steps:[
       {key:"size", type:"choice", q:"What size is your home?",
        opts:[
-         {t:"Small", sm:"≈ 1 story, under 1,500 sq ft", base:[7000,13000]},
-         {t:"Medium", sm:"≈ 1,500–2,200 sq ft", base:[9000,18000]},
-         {t:"Large", sm:"≈ 2,200–3,000 sq ft", base:[12000,24000]},
-         {t:"Extra Large", sm:"≈ 3,000–4,000 sq ft", base:[15000,30000]},
-         {t:"Very Large", sm:"Over 4,000 sq ft", base:[19000,38000]},
-         {t:"Not sure", sm:"We'll measure it", base:[12000,24000]}
+         {t:"Small", sm:"≈ 1 story, under 1,500 sq ft", base:[7500,12500]},
+         {t:"Medium", sm:"≈ 1,500–2,200 sq ft", base:[10000,17000]},
+         {t:"Large", sm:"≈ 2,200–3,000 sq ft", base:[13500,22500]},
+         {t:"Extra Large", sm:"≈ 3,000–4,000 sq ft", base:[17000,28000]},
+         {t:"Very Large", sm:"Over 4,000 sq ft", base:[21500,35500]},
+         {t:"Not sure", sm:"We'll measure it", base:[13500,22500]}
        ]},
       {key:"material", type:"choice", q:"What siding material do you want?",
        opts:[
-         {t:"Vinyl", sm:"Royal Estate — most popular", img:"sw_vinyl", mult:1.00},
+         {t:"Vinyl", sm:"CertainTeed Restoration Classic — most popular", img:"sw_vinyl", mult:1.00},
          {t:"Composite", sm:"Engineered wood-grain — premium look", img:"sw_comp", mult:1.25},
          {t:"Steel", sm:"Vesta woodgrain — most durable", img:"sw_steel", mult:1.40},
          {t:"Not sure", sm:"", img:"sw_help", mult:1.00}
@@ -356,6 +356,18 @@ const CONFIG = {
 };
 
 let state = { screen:'intro', service:null, step:0, answers:{}, size:1800 };
+/* Direct links for ads (James, 2026-11-06): estimate.roofqc.com/?service=siding (or /siding)
+   skips the menu and opens that service's questions, with its own photo on top. */
+const LANDING_HERO = { 'siding': { img: PH.showcase, cap: "Quad Cities' Award-Winning Siding Pros" } };
+(function(){
+  try{
+    var want = (new URLSearchParams(location.search).get('service') || location.pathname.replace(/^\/+|\/+$/g,'')).toLowerCase();
+    if(want && SERVICES[want] && !SERVICES[want].hidden){
+      state.service = want; state.screen = 'quiz'; state.landed = want;
+      var sl=(SERVICES[want].steps||[]).find(function(x){return x.type==='slider';}); if(sl) state.size=sl.def||state.size;
+    }
+  }catch(e){}
+})();
 const main = document.getElementById('main');
 const bar = document.getElementById('bar');
 const money = n => '$'+(Math.round(n/50)*50).toLocaleString();
@@ -429,8 +441,11 @@ function renderQuiz(){
       </div>
       <div class="note">${infoIcon()}<span>${step.hint}</span></div>`;
   }
+  const lh = (state.landed===state.service && state.step===0) ? LANDING_HERO[state.service] : null;
   main.innerHTML = `
     <div class="step">
+      ${lh?`<div class="hero"><img src="${lh.img}" alt="Twin Bridge ${s.label.toLowerCase()} project" loading="eager"><div class="ov"><span>${lh.cap}</span></div></div>
+      <span class="pill">● Free · Takes 30 seconds</span>`:''}
       <div class="eyebrow">${s.label} · Step ${state.step+1} of ${s.steps.length}</div>
       <h1>${step.q}</h1>
       <div style="height:12px"></div>
