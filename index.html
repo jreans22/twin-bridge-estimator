@@ -279,6 +279,21 @@ const SERVICES = {
        opts:[
          {t:"Yes, remove old siding", sm:"", mult:1.15},
          {t:"No / not sure", sm:"", mult:1.00}
+       ]},
+      /* Qualifying questions (James, 2026-11-06): don't change the price, they tell the
+         team which siding leads to call first. Sent to Roofstead as homeowner / timeline. */
+      {key:"owner", type:"choice", q:"Do you own the home?",
+       opts:[
+         {t:"Yes, I own it", sm:""},
+         {t:"I'm buying it", sm:"Closing soon"},
+         {t:"No, I rent", sm:""}
+       ]},
+      {key:"timeline", type:"choice", q:"When do you want the new siding?",
+       opts:[
+         {t:"As soon as possible", sm:"We install siding all winter"},
+         {t:"Within 3 months", sm:""},
+         {t:"3 to 12 months", sm:""},
+         {t:"Just checking prices", sm:""}
        ]}
     ],
     compute(a){ const b=a.size.base, m=a.material.mult*a.tearoff.mult; return [b[0]*m, b[1]*m]; }
@@ -857,6 +872,7 @@ window.submitLead = async () => {
   if(state.service==='gutters'){ details += ' | Downspouts (est, included): '+Math.max(4,Math.ceil((state.size||160)/35))+' × $120'; }
   const payload = { source:'Instant Estimator (roofqc.com)', full_name:name, phone, email, postal_code:zip, sms_transactional_consent:(document.getElementById('f_sms_t')||{}).checked===true, sms_promotional_consent:(document.getElementById('f_sms_p')||{}).checked===true,
     service:s.label, estimate_range:est, ...fin, details, address: state.answers.address?.raw || '',
+    homeowner: state.answers.owner?.t || '', timeline: state.answers.timeline?.t || '',
     // measurement diagnostics — lets us compare app vs Hover and tune the waste factor on real data
     measured_sqft: state.measured || null,
     measure_facets: state.measureMeta?.facets ?? null,
